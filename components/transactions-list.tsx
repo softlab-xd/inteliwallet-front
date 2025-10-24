@@ -1,0 +1,351 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useLanguage } from "@/lib/i18n"
+import {
+  ShoppingBag,
+  Coffee,
+  Car,
+  Home,
+  Smartphone,
+  Film,
+  Heart,
+  MoreHorizontal,
+  Search,
+  Filter,
+  ArrowUpRight,
+} from "lucide-react"
+
+type Transaction = {
+  id: string
+  title: string
+  category: string
+  amount: number
+  type: "income" | "expense"
+  date: string
+  icon: typeof ShoppingBag
+}
+
+const transactions: Transaction[] = [
+  {
+    id: "1",
+    title: "Salary Deposit",
+    category: "Income",
+    amount: 5400,
+    type: "income",
+    date: "2025-01-24",
+    icon: ArrowUpRight,
+  },
+  {
+    id: "2",
+    title: "Grocery Shopping",
+    category: "Food & Dining",
+    amount: 156.32,
+    type: "expense",
+    date: "2025-01-23",
+    icon: ShoppingBag,
+  },
+  {
+    id: "3",
+    title: "Coffee Shop",
+    category: "Food & Dining",
+    amount: 12.5,
+    type: "expense",
+    date: "2025-01-23",
+    icon: Coffee,
+  },
+  {
+    id: "4",
+    title: "Gas Station",
+    category: "Transportation",
+    amount: 65.0,
+    type: "expense",
+    date: "2025-01-22",
+    icon: Car,
+  },
+  {
+    id: "5",
+    title: "Rent Payment",
+    category: "Bills & Utilities",
+    amount: 1200,
+    type: "expense",
+    date: "2025-01-20",
+    icon: Home,
+  },
+  {
+    id: "6",
+    title: "Freelance Project",
+    category: "Income",
+    amount: 850,
+    type: "income",
+    date: "2025-01-19",
+    icon: ArrowUpRight,
+  },
+  {
+    id: "7",
+    title: "Phone Bill",
+    category: "Bills & Utilities",
+    amount: 89.99,
+    type: "expense",
+    date: "2025-01-18",
+    icon: Smartphone,
+  },
+  {
+    id: "8",
+    title: "Movie Tickets",
+    category: "Entertainment",
+    amount: 32.0,
+    type: "expense",
+    date: "2025-01-17",
+    icon: Film,
+  },
+  {
+    id: "9",
+    title: "Gym Membership",
+    category: "Health & Fitness",
+    amount: 45.0,
+    type: "expense",
+    date: "2025-01-15",
+    icon: Heart,
+  },
+  {
+    id: "10",
+    title: "Online Shopping",
+    category: "Shopping",
+    amount: 234.99,
+    type: "expense",
+    date: "2025-01-14",
+    icon: ShoppingBag,
+  },
+  {
+    id: "11",
+    title: "Restaurant Dinner",
+    category: "Food & Dining",
+    amount: 87.5,
+    type: "expense",
+    date: "2025-01-13",
+    icon: Coffee,
+  },
+  {
+    id: "12",
+    title: "Uber Ride",
+    category: "Transportation",
+    amount: 23.45,
+    type: "expense",
+    date: "2025-01-12",
+    icon: Car,
+  },
+]
+
+export function TransactionsList() {
+  const { t } = useLanguage()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
+  const [filterCategory, setFilterCategory] = useState<string>("all")
+
+  const categories = Array.from(new Set(transactions.map((t) => t.category)))
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch = transaction.title.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesType = filterType === "all" || transaction.type === filterType
+    const matchesCategory = filterCategory === "all" || transaction.category === filterCategory
+    return matchesSearch && matchesType && matchesCategory
+  })
+
+  const groupedTransactions = filteredTransactions.reduce(
+    (groups, transaction) => {
+      const date = new Date(transaction.date)
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+
+      let label: string
+      if (date.toDateString() === today.toDateString()) {
+        label = t.transactions.today
+      } else if (date.toDateString() === yesterday.toDateString()) {
+        label = t.transactions.yesterday
+      } else {
+        label = date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+      }
+
+      if (!groups[label]) {
+        groups[label] = []
+      }
+      groups[label].push(transaction)
+      return groups
+    },
+    {} as Record<string, Transaction[]>,
+  )
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Stats */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="border-border/40 bg-card/50 backdrop-blur">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t.transactions.totalTransactions}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-foreground">{transactions.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">{t.dashboard.thisMonth}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/40 bg-card/50 backdrop-blur">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t.transactions.totalIncome}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-accent">
+              $
+              {transactions
+                .filter((t) => t.type === "income")
+                .reduce((sum, t) => sum + t.amount, 0)
+                .toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {transactions.filter((t) => t.type === "income").length} {t.navigation.transactions.toLowerCase()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/40 bg-card/50 backdrop-blur">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t.transactions.totalExpenses}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-destructive">
+              $
+              {transactions
+                .filter((t) => t.type === "expense")
+                .reduce((sum, t) => sum + t.amount, 0)
+                .toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {transactions.filter((t) => t.type === "expense").length} {t.navigation.transactions.toLowerCase()}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="border-border/40 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <CardTitle className="text-foreground">{t.transactions.allTransactions}</CardTitle>
+          <CardDescription className="text-muted-foreground">{t.transactions.viewAndFilter}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Search and Filters */}
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t.transactions.searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-background/50"
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={filterType} onValueChange={(value: any) => setFilterType(value)}>
+                <SelectTrigger className="w-full sm:w-[140px] bg-background/50">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder={t.navigation.transactions} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.transactions.allTypes}</SelectItem>
+                  <SelectItem value="income">{t.transactions.income}</SelectItem>
+                  <SelectItem value="expense">{t.transactions.expense}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-background/50">
+                  <SelectValue placeholder={t.transactions.category} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.transactions.allCategories}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Transactions List */}
+          <div className="space-y-6">
+            {Object.entries(groupedTransactions).map(([date, dayTransactions]) => (
+              <div key={date} className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">{date}</h3>
+                <div className="space-y-2">
+                  {dayTransactions.map((transaction) => {
+                    const Icon = transaction.icon
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-border/40 bg-background/30 p-4 transition-colors hover:bg-background/50"
+                      >
+                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                          <div
+                            className={`flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl shrink-0 ${
+                              transaction.type === "income" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                            }`}
+                          >
+                            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-foreground truncate">{transaction.title}</p>
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <Badge variant="secondary" className="text-xs">
+                                {transaction.category}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(transaction.date).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                          <span
+                            className={`text-lg sm:text-xl font-bold ${
+                              transaction.type === "income" ? "text-accent" : "text-foreground"
+                            }`}
+                          >
+                            {transaction.type === "income" ? "+" : "-"}${transaction.amount.toFixed(2)}
+                          </span>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filteredTransactions.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="rounded-full bg-muted/50 p-4 mb-4">
+                <Search className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t.transactions.noTransactionsFound}</h3>
+              <p className="text-sm text-muted-foreground">{t.transactions.tryAdjusting}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
