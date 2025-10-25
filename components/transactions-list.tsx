@@ -1,12 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/lib/i18n"
+import { transactionService, type Transaction } from "@/lib/services/transaction.service"
 import {
   ShoppingBag,
   Coffee,
@@ -19,134 +28,118 @@ import {
   Search,
   Filter,
   ArrowUpRight,
+  Loader2,
+  Pencil,
+  Trash2,
 } from "lucide-react"
 
-type Transaction = {
-  id: string
-  title: string
-  category: string
-  amount: number
-  type: "income" | "expense"
-  date: string
-  icon: typeof ShoppingBag
+const getCategoryIcon = (category: string) => {
+  const iconMap: Record<string, typeof ShoppingBag> = {
+    "Income": ArrowUpRight,
+    "Food & Dining": Coffee,
+    "Transportation": Car,
+    "Bills & Utilities": Home,
+    "Entertainment": Film,
+    "Health & Fitness": Heart,
+    "Shopping": ShoppingBag,
+  }
+  return iconMap[category] || ShoppingBag
 }
 
-const transactions: Transaction[] = [
-  {
-    id: "1",
-    title: "Salary Deposit",
-    category: "Income",
-    amount: 5400,
-    type: "income",
-    date: "2025-01-24",
-    icon: ArrowUpRight,
-  },
-  {
-    id: "2",
-    title: "Grocery Shopping",
-    category: "Food & Dining",
-    amount: 156.32,
-    type: "expense",
-    date: "2025-01-23",
-    icon: ShoppingBag,
-  },
-  {
-    id: "3",
-    title: "Coffee Shop",
-    category: "Food & Dining",
-    amount: 12.5,
-    type: "expense",
-    date: "2025-01-23",
-    icon: Coffee,
-  },
-  {
-    id: "4",
-    title: "Gas Station",
-    category: "Transportation",
-    amount: 65.0,
-    type: "expense",
-    date: "2025-01-22",
-    icon: Car,
-  },
-  {
-    id: "5",
-    title: "Rent Payment",
-    category: "Bills & Utilities",
-    amount: 1200,
-    type: "expense",
-    date: "2025-01-20",
-    icon: Home,
-  },
-  {
-    id: "6",
-    title: "Freelance Project",
-    category: "Income",
-    amount: 850,
-    type: "income",
-    date: "2025-01-19",
-    icon: ArrowUpRight,
-  },
-  {
-    id: "7",
-    title: "Phone Bill",
-    category: "Bills & Utilities",
-    amount: 89.99,
-    type: "expense",
-    date: "2025-01-18",
-    icon: Smartphone,
-  },
-  {
-    id: "8",
-    title: "Movie Tickets",
-    category: "Entertainment",
-    amount: 32.0,
-    type: "expense",
-    date: "2025-01-17",
-    icon: Film,
-  },
-  {
-    id: "9",
-    title: "Gym Membership",
-    category: "Health & Fitness",
-    amount: 45.0,
-    type: "expense",
-    date: "2025-01-15",
-    icon: Heart,
-  },
-  {
-    id: "10",
-    title: "Online Shopping",
-    category: "Shopping",
-    amount: 234.99,
-    type: "expense",
-    date: "2025-01-14",
-    icon: ShoppingBag,
-  },
-  {
-    id: "11",
-    title: "Restaurant Dinner",
-    category: "Food & Dining",
-    amount: 87.5,
-    type: "expense",
-    date: "2025-01-13",
-    icon: Coffee,
-  },
-  {
-    id: "12",
-    title: "Uber Ride",
-    category: "Transportation",
-    amount: 23.45,
-    type: "expense",
-    date: "2025-01-12",
-    icon: Car,
-  },
-]
+interface TransactionsListProps {
+  onTransactionChange?: () => void
+}
 
-export function TransactionsList() {
+export function TransactionsList({ onTransactionChange }: TransactionsListProps) {
   const { t } = useLanguage()
   const [searchQuery, setSearchQuery] = useState("")
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
   const [filterCategory, setFilterCategory] = useState<string>("all")
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [editForm, setEditForm] = useState({
+    title: "",
+    amount: "",
+    category: "",
+    type: "expense" as "income" | "expense",
+  })
+
+  useEffect(() => {
+    loadTransactions()
+  }, [])
+
+  const loadTransactions = async () => {
+    try {
+      setIsLoading(true)
+      const data = await transactionService.list()
+      setTransactions(data)
+    } catch (err: any) {
+      console.error("Error loading transactions:", err)
+      setTransactions([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEditClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setEditForm({
+      title: transaction.title,
+      amount: transaction.amount.toString(),
+      category: transaction.category,
+      type: transaction.type,
+    })
+    setShowEditDialog(true)
+  }
+
+  const handleDeleteClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction)
+    setShowDeleteDialog(true)
+  }
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedTransaction) return
+
+    try {
+      await transactionService.update(selectedTransaction.id, {
+        title: editForm.title,
+        amount: parseFloat(editForm.amount),
+        category: editForm.category,
+        type: editForm.type,
+      })
+      await loadTransactions()
+      setShowEditDialog(false)
+      setSelectedTransaction(null)
+
+      if (onTransactionChange) {
+        onTransactionChange()
+      }
+    } catch (error) {
+      console.error("Error updating transaction:", error)
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!selectedTransaction) return
+
+    try {
+      await transactionService.delete(selectedTransaction.id)
+      await loadTransactions()
+      setShowDeleteDialog(false)
+      setSelectedTransaction(null)
+
+      if (onTransactionChange) {
+        onTransactionChange()
+      }
+    } catch (error) {
+      console.error("Error deleting transaction:", error)
+    }
+  }
 
   const categories = Array.from(new Set(transactions.map((t) => t.category)))
 
@@ -181,6 +174,17 @@ export function TransactionsList() {
     },
     {} as Record<string, Transaction[]>,
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading transactions...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -286,7 +290,7 @@ export function TransactionsList() {
                 <h3 className="text-sm font-semibold text-muted-foreground">{date}</h3>
                 <div className="space-y-2">
                   {dayTransactions.map((transaction) => {
-                    const Icon = transaction.icon
+                    const Icon = getCategoryIcon(transaction.category)
                     return (
                       <div
                         key={transaction.id}
@@ -323,9 +327,26 @@ export function TransactionsList() {
                           >
                             {transaction.type === "income" ? "+" : "-"}${transaction.amount.toFixed(2)}
                           </span>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={() => handleEditClick(transaction)} className="cursor-pointer">
+                                <Pencil className="h-4 w-4 mr-2" />
+                                {t.common.edit}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteClick(transaction)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t.common.delete}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     )
@@ -346,6 +367,122 @@ export function TransactionsList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[500px] bg-card border-border/40">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{t.common.edit} Transaction</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Update transaction details below
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSaveEdit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-type" className="text-foreground">
+                Type
+              </Label>
+              <Select value={editForm.type} onValueChange={(value: "income" | "expense") => setEditForm({ ...editForm, type: value })}>
+                <SelectTrigger id="edit-type" className="bg-background/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="income">{t.transactions.income}</SelectItem>
+                  <SelectItem value="expense">{t.transactions.expense}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-title" className="text-foreground">
+                {t.transactions.description}
+              </Label>
+              <Input
+                id="edit-title"
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                className="bg-background/50"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-amount" className="text-foreground">
+                {t.transactions.amount}
+              </Label>
+              <Input
+                id="edit-amount"
+                type="number"
+                step="0.01"
+                value={editForm.amount}
+                onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
+                className="bg-background/50"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-category" className="text-foreground">
+                {t.transactions.category}
+              </Label>
+              <Select value={editForm.category} onValueChange={(value) => setEditForm({ ...editForm, category: value })}>
+                <SelectTrigger id="edit-category" className="bg-background/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="bg-transparent">
+                {t.common.cancel}
+              </Button>
+              <Button type="submit">{t.common.save}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border/40">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{t.common.delete} Transaction</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTransaction && (
+            <div className="py-4">
+              <div className="rounded-lg border border-border/40 bg-background/30 p-4">
+                <p className="font-medium text-foreground">{selectedTransaction.title}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedTransaction.category}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    ${selectedTransaction.amount.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="bg-transparent">
+              {t.common.cancel}
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              {t.common.delete}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

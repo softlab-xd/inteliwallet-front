@@ -25,6 +25,19 @@ export interface AuthResponse {
   }
 }
 
+function setCookie(name: string, value: string, days: number = 7) {
+  if (typeof document === "undefined") return
+
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`
+}
+
+function deleteCookie(name: string) {
+  if (typeof document === "undefined") return
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`
+}
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
@@ -32,10 +45,10 @@ export const authService = {
       credentials
     )
 
-    // Save token to localStorage
     if (typeof window !== "undefined" && response.token) {
       localStorage.setItem("authToken", response.token)
       localStorage.setItem("user", JSON.stringify(response.user))
+      setCookie("authToken", response.token, 7)
     }
 
     return response
@@ -47,10 +60,10 @@ export const authService = {
       data
     )
 
-    // Save token to localStorage
     if (typeof window !== "undefined" && response.token) {
       localStorage.setItem("authToken", response.token)
       localStorage.setItem("user", JSON.stringify(response.user))
+      setCookie("authToken", response.token, 7)
     }
 
     return response
@@ -60,12 +73,12 @@ export const authService = {
     try {
       await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
     } finally {
-      // Clear local storage regardless of API response
       if (typeof window !== "undefined") {
         localStorage.removeItem("authToken")
         localStorage.removeItem("user")
         localStorage.removeItem("friends")
         localStorage.removeItem("friendInvites")
+        deleteCookie("authToken")
       }
     }
   },

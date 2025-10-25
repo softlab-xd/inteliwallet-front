@@ -61,7 +61,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center justify-center perspective-[2000px]">
         <div
           className={`w-full lg:w-1/2 transition-all duration-500 ease-in-out ${
@@ -194,7 +194,7 @@ export default function LoginPage() {
           } ${!isLogin ? "lg:order-1" : "lg:order-2"}`}
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div className="bg-gradient-to-br from-primary/20 to-accent/20 backdrop-blur border border-border/40 rounded-2xl p-8 sm:p-12 shadow-2xl">
+          <div className="bg-linear-to-br from-primary/20 to-accent/20 backdrop-blur border border-border/40 rounded-2xl p-8 sm:p-12 shadow-2xl">
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-3">

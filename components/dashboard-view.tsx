@@ -14,7 +14,7 @@ import { Onboarding } from "@/components/onboarding"
 import { LanguageSelector } from "@/components/language-selector"
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
-import { userService } from "@/lib/services"
+import { userService, authService } from "@/lib/services"
 
 type View = "dashboard" | "transactions" | "goals" | "achievements" | "profile"
 
@@ -25,20 +25,30 @@ export function DashboardView() {
   const [currentView, setCurrentView] = useState<View>("dashboard")
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const handleViewChange = (view: View) => {
+    setCurrentView(view)
+  }
+
+  const handleTransactionChange = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
 
   useEffect(() => {
-    // Check if user needs to see onboarding
     if (user && !user.hasCompletedOnboarding) {
       setShowOnboarding(true)
     }
   }, [user])
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken")
-    localStorage.removeItem("user")
-    localStorage.removeItem("friends")
-    localStorage.removeItem("friendInvites")
-    router.push("/login")
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      router.push("/login")
+    } catch (error) {
+      console.error("Error logging out:", error)
+      router.push("/login")
+    }
   }
 
   const handleCompleteOnboarding = async () => {
@@ -53,7 +63,6 @@ export function DashboardView() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="flex h-16 items-center justify-between px-4 max-w-full">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -75,13 +84,12 @@ export function DashboardView() {
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar Navigation */}
         <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
           <nav className="space-y-2 p-4">
             <Button
               variant={currentView === "dashboard" ? "default" : "ghost"}
               className="w-full justify-start gap-3"
-              onClick={() => setCurrentView("dashboard")}
+              onClick={() => handleViewChange("dashboard")}
             >
               <TrendingUp className="h-5 w-5" />
               {t.navigation.dashboard}
@@ -89,7 +97,7 @@ export function DashboardView() {
             <Button
               variant={currentView === "transactions" ? "default" : "ghost"}
               className="w-full justify-start gap-3"
-              onClick={() => setCurrentView("transactions")}
+              onClick={() => handleViewChange("transactions")}
             >
               <Wallet className="h-5 w-5" />
               {t.navigation.transactions}
@@ -97,7 +105,7 @@ export function DashboardView() {
             <Button
               variant={currentView === "goals" ? "default" : "ghost"}
               className="w-full justify-start gap-3"
-              onClick={() => setCurrentView("goals")}
+              onClick={() => handleViewChange("goals")}
             >
               <Target className="h-5 w-5" />
               {t.navigation.goals}
@@ -105,7 +113,7 @@ export function DashboardView() {
             <Button
               variant={currentView === "achievements" ? "default" : "ghost"}
               className="w-full justify-start gap-3"
-              onClick={() => setCurrentView("achievements")}
+              onClick={() => handleViewChange("achievements")}
             >
               <Trophy className="h-5 w-5" />
               {t.navigation.achievements}
@@ -113,7 +121,7 @@ export function DashboardView() {
             <Button
               variant={currentView === "profile" ? "default" : "ghost"}
               className="w-full justify-start gap-3"
-              onClick={() => setCurrentView("profile")}
+              onClick={() => handleViewChange("profile")}
             >
               <User className="h-5 w-5" />
               {t.navigation.profile}
@@ -131,11 +139,10 @@ export function DashboardView() {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 overflow-auto">
           <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
-            {currentView === "dashboard" && <SpendingDashboard />}
-            {currentView === "transactions" && <TransactionsList />}
+            {currentView === "dashboard" && <SpendingDashboard refreshTrigger={refreshTrigger} />}
+            {currentView === "transactions" && <TransactionsList onTransactionChange={handleTransactionChange} />}
             {currentView === "goals" && <GoalsTracker />}
             {currentView === "achievements" && <GamificationPanel />}
             {currentView === "profile" && <UserProfile />}
@@ -143,7 +150,6 @@ export function DashboardView() {
         </main>
       </div>
 
-      {/* Floating Action Button */}
       <Button
         size="icon"
         className="fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40"
@@ -152,17 +158,19 @@ export function DashboardView() {
         <Plus className="h-6 w-6" />
       </Button>
 
-      {/* Add Transaction Dialog */}
-      <AddTransactionDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <AddTransactionDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onSuccess={handleTransactionChange}
+      />
 
-      {/* Mobile Bottom Navigation */}
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around p-2 gap-1">
           <Button
             variant={currentView === "dashboard" ? "default" : "ghost"}
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
-            onClick={() => setCurrentView("dashboard")}
+            onClick={() => handleViewChange("dashboard")}
           >
             <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.dashboard}</span>
@@ -171,7 +179,7 @@ export function DashboardView() {
             variant={currentView === "transactions" ? "default" : "ghost"}
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
-            onClick={() => setCurrentView("transactions")}
+            onClick={() => handleViewChange("transactions")}
           >
             <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.transactions}</span>
@@ -180,7 +188,7 @@ export function DashboardView() {
             variant={currentView === "goals" ? "default" : "ghost"}
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
-            onClick={() => setCurrentView("goals")}
+            onClick={() => handleViewChange("goals")}
           >
             <Target className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.goals}</span>
@@ -189,7 +197,7 @@ export function DashboardView() {
             variant={currentView === "achievements" ? "default" : "ghost"}
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
-            onClick={() => setCurrentView("achievements")}
+            onClick={() => handleViewChange("achievements")}
           >
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.achievements}</span>
@@ -198,7 +206,7 @@ export function DashboardView() {
             variant={currentView === "profile" ? "default" : "ghost"}
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
-            onClick={() => setCurrentView("profile")}
+            onClick={() => handleViewChange("profile")}
           >
             <User className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.profile}</span>
@@ -215,7 +223,6 @@ export function DashboardView() {
         </div>
       </nav>
 
-      {/* Onboarding */}
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
     </div>
   )

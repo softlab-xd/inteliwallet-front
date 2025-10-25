@@ -8,6 +8,11 @@ export interface UpdateUserData {
   avatar?: string
 }
 
+export interface ChangePasswordData {
+  currentPassword: string
+  newPassword: string
+}
+
 export const userService = {
   async getProfile(): Promise<User> {
     return apiClient.get<User>(API_ENDPOINTS.USERS.PROFILE)
@@ -19,7 +24,6 @@ export const userService = {
       data
     )
 
-    // Update localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("user", JSON.stringify(updatedUser))
     }
@@ -30,12 +34,15 @@ export const userService = {
   async deleteAccount(): Promise<void> {
     await apiClient.delete<void>(API_ENDPOINTS.USERS.DELETE)
 
-    // Clear localStorage
     if (typeof window !== "undefined") {
       localStorage.removeItem("authToken")
       localStorage.removeItem("user")
       localStorage.removeItem("friends")
       localStorage.removeItem("friendInvites")
     }
+  },
+
+  async changePassword(data: ChangePasswordData): Promise<void> {
+    return apiClient.put<void>("/users/change-password", data)
   },
 }

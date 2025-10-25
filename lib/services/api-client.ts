@@ -24,7 +24,6 @@ class ApiClient {
   ): Promise<T> {
     const { params, ...fetchOptions } = options
 
-    // Build URL with query params
     let url = `${this.baseURL}${endpoint}`
     if (params) {
       const queryString = new URLSearchParams(
@@ -33,19 +32,16 @@ class ApiClient {
       url += `?${queryString}`
     }
 
-    // Setup headers
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       ...fetchOptions.headers,
     }
 
-    // Add auth token if available
     const token = this.getAuthToken()
     if (token) {
       headers.Authorization = `Bearer ${token}`
     }
 
-    // Setup abort controller for timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), this.timeout)
 
@@ -58,7 +54,6 @@ class ApiClient {
 
       clearTimeout(timeoutId)
 
-      // Handle non-OK responses
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new ApiError(
@@ -68,7 +63,6 @@ class ApiClient {
         )
       }
 
-      // Handle no content responses
       if (response.status === 204) {
         return {} as T
       }

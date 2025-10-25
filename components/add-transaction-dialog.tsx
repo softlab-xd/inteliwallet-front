@@ -60,13 +60,11 @@ export function AddTransactionDialog({ open, onOpenChange, onSuccess }: AddTrans
         date: new Date().toISOString(),
       })
 
-      // Reset form
       setAmount("")
       setTitle("")
       setCategory("")
       onOpenChange(false)
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess()
       }

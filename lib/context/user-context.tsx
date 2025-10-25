@@ -38,12 +38,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Fetch user profile
       const userProfile = await userService.getProfile()
       setUser(userProfile)
       localStorage.setItem("user", JSON.stringify(userProfile))
 
-      // Fetch friends and invites in parallel
       const [friendsList, invitesList] = await Promise.all([
         friendService.list(),
         friendService.getInvites(),
@@ -53,7 +51,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setFriendInvites(invitesList)
     } catch (error) {
       console.error("Error fetching user data:", error)
-      // If auth fails, clear everything
       setUser(null)
       setFriends([])
       setFriendInvites([])
@@ -97,8 +94,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const addFriend = async (username: string) => {
     try {
       await friendService.add(username)
-      // Optionally refresh the friends list to show pending status
-      // await refreshUser()
+      await refreshUser()
     } catch (error) {
       console.error("Error adding friend:", error)
       throw error

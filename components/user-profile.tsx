@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
-import { User, Trash2, UserPlus, X, Check, Crown } from "lucide-react"
+import { userService } from "@/lib/services"
+import { User, Trash2, UserPlus, X, Check, Crown, Lock } from "lucide-react"
 
 export function UserProfile() {
   const { t } = useLanguage()
@@ -19,6 +20,16 @@ export function UserProfile() {
   const [email, setEmail] = useState(user?.email || "")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [friendUsername, setFriendUsername] = useState("")
+
+  // Change password state
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,6 +46,43 @@ export function UserProfile() {
     if (friendUsername.trim()) {
       addFriend(friendUsername)
       setFriendUsername("")
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordError("")
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError("A nova senha deve ter no mínimo 6 caracteres")
+      return
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("As senhas não coincidem")
+      return
+    }
+
+    try {
+      setPasswordLoading(true)
+      await userService.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      })
+
+      // Success - reset form and close dialog
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      })
+      setShowPasswordDialog(false)
+      alert("Senha alterada com sucesso!")
+    } catch (error: any) {
+      console.error("Error changing password:", error)
+      setPasswordError(error.response?.data?.message || error.message || "Erro ao alterar senha")
+    } finally {
+      setPasswordLoading(false)
     }
   }
 
@@ -115,7 +163,11 @@ export function UserProfile() {
             <div className="space-y-2">
               <Label className="text-foreground">{t.profile.password}</Label>
               <p className="text-sm text-muted-foreground">••••••••</p>
-              <Button variant="outline" className="w-full bg-transparent">
+              <Button
+                variant="outline"
+                className="w-full bg-transparent"
+                onClick={() => setShowPasswordDialog(true)}
+              >
                 {t.profile.changePassword}
               </Button>
             </div>
@@ -233,6 +285,94 @@ export function UserProfile() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border/40">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{t.profile.changePassword}</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Digite sua senha atual e a nova senha
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword" className="text-foreground">
+                {t.profile.currentPassword}
+              </Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                className="bg-background/50"
+                required
+                disabled={passwordLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword" className="text-foreground">
+                {t.profile.newPassword}
+              </Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                className="bg-background/50"
+                required
+                minLength={6}
+                disabled={passwordLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-foreground">
+                {t.profile.confirmPassword}
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                className="bg-background/50"
+                required
+                minLength={6}
+                disabled={passwordLoading}
+              />
+            </div>
+
+            {passwordError && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/40 text-destructive text-sm">
+                {passwordError}
+              </div>
+            )}
+
+            <DialogFooter className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordDialog(false)
+                  setPasswordError("")
+                  setPasswordForm({
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                  })
+                }}
+                className="bg-transparent"
+                disabled={passwordLoading}
+              >
+                {t.common.cancel}
+              </Button>
+              <Button type="submit" disabled={passwordLoading}>
+                {passwordLoading ? "Salvando..." : t.common.save}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-[425px] bg-card border-border/40">

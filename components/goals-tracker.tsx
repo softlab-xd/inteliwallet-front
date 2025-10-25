@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -10,62 +10,25 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Target, Plus, TrendingUp, Calendar, DollarSign, Edit, Trash2 } from "lucide-react"
+import { Target, Plus, TrendingUp, Calendar, DollarSign, Edit, Trash2, Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
+import { goalService, type Goal } from "@/lib/services/goal.service"
 
-type Goal = {
-  id: string
-  title: string
-  targetAmount: number
-  currentAmount: number
-  deadline: string
-  category: string
-  color: string
+const getCategoryColor = (category: string) => {
+  const colorMap: Record<string, string> = {
+    "Savings": "oklch(0.65 0.25 285)",
+    "Travel": "oklch(0.55 0.22 310)",
+    "Technology": "oklch(0.6 0.2 260)",
+    "Investment": "oklch(0.7 0.18 200)",
+  }
+  return colorMap[category] || "oklch(0.65 0.25 285)"
 }
-
-const initialGoals: Goal[] = [
-  {
-    id: "1",
-    title: "Emergency Fund",
-    targetAmount: 10000,
-    currentAmount: 6500,
-    deadline: "2025-12-31",
-    category: "Savings",
-    color: "oklch(0.65 0.25 285)",
-  },
-  {
-    id: "2",
-    title: "Vacation to Japan",
-    targetAmount: 5000,
-    currentAmount: 2800,
-    deadline: "2025-08-15",
-    category: "Travel",
-    color: "oklch(0.55 0.22 310)",
-  },
-  {
-    id: "3",
-    title: "New Laptop",
-    targetAmount: 2500,
-    currentAmount: 1950,
-    deadline: "2025-03-30",
-    category: "Technology",
-    color: "oklch(0.6 0.2 260)",
-  },
-  {
-    id: "4",
-    title: "Investment Portfolio",
-    targetAmount: 15000,
-    currentAmount: 4200,
-    deadline: "2026-01-01",
-    category: "Investment",
-    color: "oklch(0.7 0.18 200)",
-  },
-]
 
 export function GoalsTracker() {
   const { t } = useLanguage()
-  const [goals, setGoals] = useState<Goal[]>(initialGoals)
+  const [goals, setGoals] = useState<Goal[]>([])
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [newGoal, setNewGoal] = useState({
     title: "",
     targetAmount: "",
@@ -73,24 +36,44 @@ export function GoalsTracker() {
     category: "",
   })
 
+  useEffect(() => {
+    loadGoals()
+  }, [])
+
+  const loadGoals = async () => {
+    try {
+      setIsLoading(true)
+      const data = await goalService.list()
+      setGoals(data)
+    } catch (err: any) {
+      console.error("Error loading goals:", err)
+      setGoals([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const totalTargetAmount = goals.reduce((sum, goal) => sum + goal.targetAmount, 0)
   const totalCurrentAmount = goals.reduce((sum, goal) => sum + goal.currentAmount, 0)
-  const overallProgress = (totalCurrentAmount / totalTargetAmount) * 100
+  const overallProgress = totalTargetAmount > 0 ? (totalCurrentAmount / totalTargetAmount) * 100 : 0
 
-  const handleAddGoal = (e: React.FormEvent) => {
+  const handleAddGoal = async (e: React.FormEvent) => {
     e.preventDefault()
-    const goal: Goal = {
-      id: Date.now().toString(),
-      title: newGoal.title,
-      targetAmount: Number.parseFloat(newGoal.targetAmount),
-      currentAmount: 0,
-      deadline: newGoal.deadline,
-      category: newGoal.category,
-      color: "oklch(0.65 0.25 285)",
+    try {
+      const goalData = {
+        title: newGoal.title,
+        targetAmount: Number.parseFloat(newGoal.targetAmount),
+        currentAmount: 0,
+        category: newGoal.category,
+        deadline: newGoal.deadline,
+      }
+      await goalService.create(goalData)
+      await loadGoals() 
+      setShowAddDialog(false)
+      setNewGoal({ title: "", targetAmount: "", deadline: "", category: "" })
+    } catch (err: any) {
+      console.error("Error creating goal:", err)
     }
-    setGoals([...goals, goal])
-    setShowAddDialog(false)
-    setNewGoal({ title: "", targetAmount: "", deadline: "", category: "" })
   }
 
   const getDaysRemaining = (deadline: string) => {
@@ -99,6 +82,17 @@ export function GoalsTracker() {
     const diffTime = deadlineDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading goals...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -195,7 +189,7 @@ export function GoalsTracker() {
 
           return (
             <Card key={goal.id} className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
-              <div className="h-2" style={{ backgroundColor: goal.color }} />
+              <div className="h-2" style={{ backgroundColor: getCategoryColor(goal.category) }} />
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
