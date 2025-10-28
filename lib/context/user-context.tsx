@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { User, Friend, FriendInvite } from "../types/user"
 import { userService, friendService } from "../services"
+import { streakService } from "../services/streak.service"
 
 interface UserContextType {
   user: User | null
@@ -49,6 +50,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       setFriends(friendsList)
       setFriendInvites(invitesList)
+
+      streakService.recordStreak('DAILY_LOGIN').catch((err) => {
+        console.debug("Streak already recorded today or error:", err)
+      })
     } catch (error) {
       console.error("Error fetching user data:", error)
       setUser(null)

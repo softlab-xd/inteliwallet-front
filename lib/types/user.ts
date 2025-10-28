@@ -7,6 +7,7 @@ export interface User {
   totalPoints: number
   level: number
   hasCompletedOnboarding?: boolean
+  plan: 'free' | 'standard' | 'plus'
 }
 
 export interface Friend {

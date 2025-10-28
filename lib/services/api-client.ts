@@ -32,14 +32,18 @@ class ApiClient {
       url += `?${queryString}`
     }
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...fetchOptions.headers,
     }
 
     const token = this.getAuthToken()
     if (token) {
       headers.Authorization = `Bearer ${token}`
+    }
+
+    if (fetchOptions.headers) {
+      const providedHeaders = fetchOptions.headers as Record<string, string>
+      Object.assign(headers, providedHeaders)
     }
 
     const controller = new AbortController()
