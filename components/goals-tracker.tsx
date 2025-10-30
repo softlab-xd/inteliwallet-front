@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Target, Plus, TrendingUp, Calendar, DollarSign, Edit, Trash2, Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
-import { goalService, type Goal } from "@/lib/services/goal.service"
+import { useGoals, useCreateGoal } from "@/hooks/use-goals"
+import { PlanLimitModal } from "@/components/plan-limit-modal"
+import type { PlanType } from "@/lib/types/subscription"
+import { useUser } from "@/lib/context/user-context"
+import { useToast } from "@/hooks/use-toast"
 
 const getCategoryColor = (category: string) => {
   const colorMap: Record<string, string> = {
@@ -26,9 +30,10 @@ const getCategoryColor = (category: string) => {
 
 export function GoalsTracker() {
   const { t } = useLanguage()
-  const [goals, setGoals] = useState<Goal[]>([])
+  const { user } = useUser()
+  const { toast } = useToast()
   const [showAddDialog, setShowAddDialog] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [showLimitModal, setShowLimitModal] = useState(false)
   const [newGoal, setNewGoal] = useState({
     title: "",
     targetAmount: "",
@@ -36,22 +41,9 @@ export function GoalsTracker() {
     category: "",
   })
 
-  useEffect(() => {
-    loadGoals()
-  }, [])
-
-  const loadGoals = async () => {
-    try {
-      setIsLoading(true)
-      const data = await goalService.list()
-      setGoals(data)
-    } catch (err: any) {
-      console.error("Error loading goals:", err)
-      setGoals([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Usar hooks do React Query
+  const { data: goals = [], isLoading } = useGoals()
+  const createGoalMutation = useCreateGoal()
 
   const totalTargetAmount = goals.reduce((sum, goal) => sum + goal.targetAmount, 0)
   const totalCurrentAmount = goals.reduce((sum, goal) => sum + goal.currentAmount, 0)
@@ -67,12 +59,29 @@ export function GoalsTracker() {
         category: newGoal.category,
         deadline: newGoal.deadline,
       }
-      await goalService.create(goalData)
-      await loadGoals() 
+
+      await createGoalMutation.mutateAsync(goalData)
+
       setShowAddDialog(false)
       setNewGoal({ title: "", targetAmount: "", deadline: "", category: "" })
+
+      toast({
+        title: t.goals.goalCreated || "Goal created",
+        description: t.goals.goalCreatedDesc || "Your goal has been created successfully",
+      })
     } catch (err: any) {
       console.error("Error creating goal:", err)
+
+      if (err.message?.includes("limite de metas") || err.message?.includes("limit") || err.message?.includes("goal")) {
+        setShowAddDialog(false)
+        setShowLimitModal(true)
+      } else {
+        toast({
+          title: t.common.error || "Error",
+          description: err.message || t.goals.goalCreationFailed || "Failed to create goal",
+          variant: "destructive",
+        })
+      }
     }
   }
 
@@ -97,7 +106,6 @@ export function GoalsTracker() {
 
   return (
     <div className="space-y-6">
-      {/* Overview Stats */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-border/40 bg-card/50 backdrop-blur">
           <CardHeader className="pb-3">
@@ -142,7 +150,6 @@ export function GoalsTracker() {
         </Card>
       </div>
 
-      {/* Overall Progress */}
       <Card className="border-border/40 bg-card/50 backdrop-blur">
         <CardHeader>
           <CardTitle className="text-foreground">{t.goals.overallProgress}</CardTitle>
@@ -169,7 +176,6 @@ export function GoalsTracker() {
         </CardContent>
       </Card>
 
-      {/* Goals List */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t.goals.yourGoals}</h2>
@@ -356,6 +362,14 @@ export function GoalsTracker() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <PlanLimitModal
+        open={showLimitModal}
+        onOpenChange={setShowLimitModal}
+        currentPlan={(user?.plan || 'free') as PlanType}
+        limitType="goals"
+        currentCount={goals.length}
+      />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,18 +10,30 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService } from "@/lib/services"
-import { User, Trash2, UserPlus, X, Check, Crown, Lock } from "lucide-react"
+import { User, Trash2, UserPlus, X, Check, Crown, Lock, Smile, RefreshCw } from "lucide-react"
+import { EmojiPickerModal } from "@/components/emoji-picker-modal"
 
 export function UserProfile() {
   const { t } = useLanguage()
-  const { user, friends, friendInvites, updateUser, deleteAccount, addFriend, removeFriend, acceptInvite, declineInvite } = useUser()
+  const { user, friends, friendInvites, updateUser, deleteAccount, addFriend, removeFriend, acceptInvite, declineInvite, refreshUser } = useUser()
 
   const [username, setUsername] = useState(user?.username || "")
   const [email, setEmail] = useState(user?.email || "")
+  const [avatar, setAvatar] = useState(user?.avatar || "😀")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [friendUsername, setFriendUsername] = useState("")
+  const [addFriendError, setAddFriendError] = useState("")
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // Change password state
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username || "")
+      setEmail(user.email || "")
+      setAvatar(user.avatar || "😀")
+    }
+  }, [user])
+
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -33,7 +45,11 @@ export function UserProfile() {
 
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault()
-    updateUser({ username, email })
+    updateUser({ username, email, avatar })
+  }
+
+  const handleEmojiSelect = (emoji: string) => {
+    setAvatar(emoji)
   }
 
   const handleDeleteAccount = () => {
@@ -41,11 +57,35 @@ export function UserProfile() {
     setShowDeleteDialog(false)
   }
 
-  const handleAddFriend = (e: React.FormEvent) => {
+  const handleAddFriend = async (e: React.FormEvent) => {
     e.preventDefault()
+    setAddFriendError("")
+
     if (friendUsername.trim()) {
-      addFriend(friendUsername)
-      setFriendUsername("")
+      try {
+        await addFriend(friendUsername)
+        setFriendUsername("")
+        setAddFriendError("")
+        alert(`Friend request sent to ${friendUsername}! They will see it in their pending invites.`)
+      } catch (error: any) {
+        let errorMessage = error.response?.data?.message || error.message || "Error adding friend"
+
+        if (errorMessage.includes("convite pendente") || errorMessage.includes("pending")) {
+          errorMessage = `${errorMessage}\n\n💡 Tip: If you sent the invite, the other user needs to accept it. If they sent it to you, check "Pending Invites" below and click Refresh.`
+        }
+
+        setAddFriendError(errorMessage)
+        console.error("Error adding friend:", error)
+      }
+    }
+  }
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await refreshUser()
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
@@ -70,7 +110,6 @@ export function UserProfile() {
         newPassword: passwordForm.newPassword,
       })
 
-      // Success - reset form and close dialog
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
@@ -87,6 +126,14 @@ export function UserProfile() {
   }
 
   const sortedFriends = [...friends].sort((a, b) => b.totalPoints - a.totalPoints)
+
+  console.log("👤 User Profile Component - User:", user)
+  console.log("👥 User Profile Component - Friends:", friends, `(${friends.length} friends)`)
+  console.log("📬 User Profile Component - Friend Invites:", friendInvites, `(${friendInvites.length} invites)`)
+
+  if (user && friends.length === 0) {
+    console.warn("⚠️ No friends loaded. Check if backend returned empty array or if there's an error.")
+  }
 
   return (
     <div className="space-y-6">
@@ -106,6 +153,25 @@ export function UserProfile() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-foreground">Avatar</Label>
+                <div className="flex items-center gap-4">
+                  <div className="text-6xl">{avatar}</div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEmojiPicker(true)}
+                    className="gap-2"
+                  >
+                    <Smile className="h-4 w-4" />
+                    Change Avatar
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Click to choose a new emoji avatar
+                </p>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-foreground">
                   {t.profile.username}
@@ -160,7 +226,38 @@ export function UserProfile() {
             <CardDescription className="text-muted-foreground">{t.profile.accountSettingsDescription}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border/40">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Account ID</Label>
+                <p className="text-sm font-mono text-foreground break-all">
+                  {user?.id || 'Loading...'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Username</Label>
+                <p className="text-sm font-medium text-foreground">
+                  @{user?.username || 'Loading...'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <p className="text-sm text-foreground">
+                  {user?.email || 'Loading...'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Member Since</Label>
+                <p className="text-sm text-foreground">
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'N/A'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
               <Label className="text-foreground">{t.profile.password}</Label>
               <p className="text-sm text-muted-foreground">••••••••</p>
               <Button
@@ -192,54 +289,114 @@ export function UserProfile() {
               </CardTitle>
               <CardDescription className="text-muted-foreground">{t.profile.friendsDescription}</CardDescription>
             </div>
-            <Badge variant="secondary" className="self-start">
-              {friends.length} {t.profile.friends}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Badge variant="secondary">
+                {friends.length} {t.profile.friends}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleAddFriend} className="flex gap-2">
-            <Input
-              placeholder={t.profile.searchFriends}
-              value={friendUsername}
-              onChange={(e) => setFriendUsername(e.target.value)}
-              className="flex-1 bg-background/50"
-            />
-            <Button type="submit">
-              <UserPlus className="h-4 w-4 mr-2" />
-              {t.profile.addFriend}
-            </Button>
+          <form onSubmit={handleAddFriend} className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder={t.profile.searchFriends}
+                value={friendUsername}
+                onChange={(e) => {
+                  setFriendUsername(e.target.value)
+                  setAddFriendError("")
+                }}
+                className="flex-1 bg-background/50"
+              />
+              <Button type="submit">
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t.profile.addFriend}
+              </Button>
+            </div>
+            {addFriendError && (
+              <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/40 text-destructive text-sm">
+                {addFriendError}
+              </div>
+            )}
           </form>
 
-          {friendInvites.length > 0 && (
-            <div className="space-y-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">{t.profile.pendingInvites}</h3>
+              <Badge variant="secondary" className="text-xs">
+                {friendInvites.length} pending
+              </Badge>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/40 text-xs text-blue-600 dark:text-blue-400">
+              <p className="font-medium mb-1">ℹ️ How friend invites work:</p>
+              <ul className="space-y-1 list-disc list-inside text-muted-foreground">
+                <li>Invites you <strong>send</strong> won't appear here</li>
+                <li>Only invites you <strong>receive</strong> from others are shown</li>
+                <li>Click "Refresh" above to check for new invites</li>
+              </ul>
+            </div>
+
+            {friendInvites.length === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground border border-border/40 rounded-lg bg-background/30">
+                <p>No pending friend invites</p>
+                <p className="text-xs mt-1">When someone sends you a friend request, it will appear here</p>
+              </div>
+            ) : (
               <div className="space-y-2">
-                {friendInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-background/30"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{invite.fromUser.avatar}</div>
-                      <div>
-                        <p className="font-medium text-foreground">{invite.fromUser.username}</p>
-                        <p className="text-xs text-muted-foreground">{t.profile.friendUsername}</p>
+                {friendInvites.map((invite) => {
+                  const avatar = invite.fromUser?.avatar
+                  const isUrl = avatar?.startsWith('http://') || avatar?.startsWith('https://')
+
+                  return (
+                    <div
+                      key={invite.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-background/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isUrl ? (
+                          <img
+                            src={avatar}
+                            alt={invite.fromUser?.username}
+                            className="h-10 w-10 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                            }}
+                          />
+                        ) : null}
+                        <div className={`text-2xl ${isUrl ? 'hidden' : ''}`}>
+                          {!isUrl && (avatar || "👤")}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{invite.fromUser?.username || "Unknown"}</p>
+                          <p className="text-xs text-muted-foreground">Wants to be your friend</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="default" onClick={() => acceptInvite(invite.id)}>
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => declineInvite(invite.id)}>
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="default" onClick={() => acceptInvite(invite.id)}>
-                        <Check className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => declineInvite(invite.id)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-foreground">{t.profile.friendsList}</h3>
@@ -249,37 +406,55 @@ export function UserProfile() {
               </div>
             ) : (
               <div className="space-y-2">
-                {sortedFriends.map((friend, index) => (
-                  <div
-                    key={friend.id}
-                    className={`flex items-center justify-between p-3 rounded-lg border border-border/40 ${
-                      index === 0 ? "bg-primary/10 border-primary/40" : "bg-background/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full font-bold ${
-                          index === 0 ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground"
-                        }`}
-                      >
-                        {index + 1}
+                {sortedFriends.map((friend, index) => {
+                  const avatar = friend.avatar
+                  const isUrl = avatar?.startsWith('http://') || avatar?.startsWith('https://')
+
+                  return (
+                    <div
+                      key={friend.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border border-border/40 ${
+                        index === 0 ? "bg-primary/10 border-primary/40" : "bg-background/30"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-full font-bold ${
+                            index === 0 ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground"
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+                        {isUrl ? (
+                          <img
+                            src={avatar}
+                            alt={friend.username}
+                            className="h-10 w-10 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                            }}
+                          />
+                        ) : null}
+                        <div className={`text-2xl ${isUrl ? 'hidden' : ''}`}>
+                          {!isUrl && (avatar || "👤")}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{friend.username}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {friend.totalPoints} {t.profile.points}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-2xl">{friend.avatar}</div>
-                      <div>
-                        <p className="font-medium text-foreground">{friend.username}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {friend.totalPoints} {t.profile.points}
-                        </p>
+                      <div className="flex items-center gap-2">
+                        {index === 0 && <Crown className="h-5 w-5 text-accent" />}
+                        <Button size="sm" variant="ghost" onClick={() => removeFriend(friend.id)}>
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {index === 0 && <Crown className="h-5 w-5 text-accent" />}
-                      <Button size="sm" variant="ghost" onClick={() => removeFriend(friend.id)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -390,6 +565,13 @@ export function UserProfile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <EmojiPickerModal
+        open={showEmojiPicker}
+        onOpenChange={setShowEmojiPicker}
+        currentEmoji={avatar}
+        onEmojiSelect={handleEmojiSelect}
+      />
     </div>
   )
 }

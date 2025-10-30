@@ -28,25 +28,55 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshUser = async () => {
+    const startTime = Date.now()
     try {
       setIsLoading(true)
       const token = localStorage.getItem("authToken")
 
       if (!token) {
+        console.log("❌ No auth token found")
         setUser(null)
         setFriends([])
         setFriendInvites([])
         return
       }
 
+      console.log("🔄 Loading user profile...")
       const userProfile = await userService.getProfile()
+      console.log("✅ User Profile loaded:", userProfile)
+
       setUser(userProfile)
       localStorage.setItem("user", JSON.stringify(userProfile))
 
+      const profileLoadTime = Date.now() - startTime
+      console.log(`⏱️  Profile loaded in ${profileLoadTime}ms`)
+
+      console.log("🔄 Loading friends and invites...")
+      const friendsStartTime = Date.now()
+
       const [friendsList, invitesList] = await Promise.all([
-        friendService.list(),
-        friendService.getInvites(),
+        friendService.list().catch(err => {
+          console.error("❌ Error loading friends:", err)
+          console.error("Error details:", err.response?.data)
+          return []
+        }),
+        friendService.getInvites().catch(err => {
+          console.error("❌ Error loading invites:", err)
+          console.error("Error details:", err.response?.data)
+
+          if (err.response?.data?.message?.includes('LazyInitializationException')) {
+            console.error("🔴 Backend Error: Friend invites have a Hibernate LazyInitializationException")
+            console.error("💡 This needs to be fixed in the backend by adding @Transactional or fetch join")
+          }
+
+          return []
+        }),
       ])
+
+      const friendsLoadTime = Date.now() - friendsStartTime
+      console.log(`✅ Friends list loaded (${friendsList.length} friends):`, friendsList)
+      console.log(`✅ Friend invites loaded (${invitesList.length} invites):`, invitesList)
+      console.log(`⏱️  Friends/invites loaded in ${friendsLoadTime}ms`)
 
       setFriends(friendsList)
       setFriendInvites(invitesList)
@@ -54,8 +84,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
       streakService.recordStreak('DAILY_LOGIN').catch((err) => {
         console.debug("Streak already recorded today or error:", err)
       })
+
+      const totalTime = Date.now() - startTime
+      console.log(`⏱️  Total load time: ${totalTime}ms`)
     } catch (error) {
-      console.error("Error fetching user data:", error)
+      console.error("❌ Error fetching user data:", error)
       setUser(null)
       setFriends([])
       setFriendInvites([])
@@ -98,10 +131,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const addFriend = async (username: string) => {
     try {
-      await friendService.add(username)
+      const result = await friendService.add(username)
+      console.log("✅ Friend invite sent:", result)
       await refreshUser()
-    } catch (error) {
-      console.error("Error adding friend:", error)
+    } catch (error: any) {
+      console.error("❌ Error adding friend:", error)
+      console.error("Error details:", error.response?.data)
       throw error
     }
   }

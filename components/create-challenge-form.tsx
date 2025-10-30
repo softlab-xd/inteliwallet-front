@@ -13,6 +13,9 @@ import { Loader2, Trophy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { challengeService } from "@/lib/services/challenge.service"
 import type { CreateChallengeRequest } from "@/lib/types/challenge"
+import { PlanLimitModal } from "@/components/plan-limit-modal"
+import type { PlanType } from "@/lib/types/subscription"
+import { useUser } from "@/lib/context/user-context"
 
 interface CreateChallengeFormProps {
   open: boolean
@@ -33,7 +36,10 @@ const categories = [
 
 export function CreateChallengeForm({ open, onOpenChange, onSuccess }: CreateChallengeFormProps) {
   const { toast } = useToast()
+  const { user } = useUser()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showLimitModal, setShowLimitModal] = useState(false)
+  const [createdChallengesCount, setCreatedChallengesCount] = useState(0)
   const [formData, setFormData] = useState<Partial<CreateChallengeRequest>>({
     title: "",
     description: "",
@@ -114,11 +120,10 @@ export function CreateChallengeForm({ open, onOpenChange, onSuccess }: CreateCha
       console.error("Error creating challenge:", err)
 
       if (err.message?.includes("limite de desafios") || err.message?.includes("limit")) {
-        toast({
-          title: "Plan Limit Reached",
-          description: err.message || "Upgrade your plan to create more challenges",
-          variant: "destructive",
-        })
+        const response = await challengeService.getMyChallenges()
+        const createdCount = response.filter((c: any) => c.creator.id === user?.id).length
+        setCreatedChallengesCount(createdCount)
+        setShowLimitModal(true)
       } else {
         toast({
           title: "Error",
@@ -138,6 +143,7 @@ export function CreateChallengeForm({ open, onOpenChange, onSuccess }: CreateCha
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -297,5 +303,14 @@ export function CreateChallengeForm({ open, onOpenChange, onSuccess }: CreateCha
         </form>
       </DialogContent>
     </Dialog>
+
+    <PlanLimitModal
+      open={showLimitModal}
+      onOpenChange={setShowLimitModal}
+      currentPlan={(user?.plan || 'free') as PlanType}
+      limitType="challenges"
+      currentCount={createdChallengesCount}
+    />
+  </>
   )
 }

@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Trophy, Star, Zap, Target, TrendingUp, Award, Crown, Flame, Lock, CheckCircle2, Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
-import { gamificationService, type Achievement as ApiAchievement, type Challenge as ApiChallenge, type LeaderboardEntry } from "@/lib/services/gamification.service"
+import { useAchievements } from "@/hooks/use-achievements"
+import { useChallenges } from "@/hooks/use-challenges"
+import { useLeaderboard, useFriendsLeaderboard } from "@/hooks/use-leaderboard"
 
 const getIconComponent = (iconName: string) => {
   const iconMap: Record<string, typeof Trophy> = {
@@ -32,35 +33,13 @@ const rarityColors = {
 
 export function GamificationPanel() {
   const { t } = useLanguage()
-  const [achievements, setAchievements] = useState<ApiAchievement[]>([])
-  const [challenges, setChallenges] = useState<ApiChallenge[]>([])
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadGamificationData()
-  }, [])
+  const { data: achievements = [], isLoading: achievementsLoading } = useAchievements()
+  const { data: challenges = [], isLoading: challengesLoading } = useChallenges()
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = useLeaderboard(50)
+  const { data: friendsLeaderboard = [], isLoading: friendsLeaderboardLoading } = useFriendsLeaderboard()
 
-  const loadGamificationData = async () => {
-    try {
-      setIsLoading(true)
-      const [achievementsData, challengesData, leaderboardData] = await Promise.all([
-        gamificationService.getAchievements(),
-        gamificationService.getChallenges(),
-        gamificationService.getLeaderboard(),
-      ])
-      setAchievements(achievementsData)
-      setChallenges(challengesData)
-      setLeaderboard(leaderboardData)
-    } catch (err: any) {
-      console.error("Error loading gamification data:", err)
-      setAchievements([])
-      setChallenges([])
-      setLeaderboard([])
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const isLoading = achievementsLoading || challengesLoading || leaderboardLoading || friendsLeaderboardLoading
 
   const totalPoints = achievements.filter((a) => a.unlocked).reduce((sum, a) => sum + a.points, 0)
   const unlockedCount = achievements.filter((a) => a.unlocked).length
@@ -88,7 +67,6 @@ export function GamificationPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Player Stats */}
       <Card className="border-border/40 bg-linear-to-br from-primary/20 to-accent/20 backdrop-blur">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-6">
@@ -117,7 +95,6 @@ export function GamificationPanel() {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="border-border/40 bg-card/50 backdrop-blur">
           <CardHeader className="pb-3">
@@ -157,11 +134,11 @@ export function GamificationPanel() {
         </Card>
       </div>
 
-      {/* Tabs for Achievements and Challenges */}
       <Tabs defaultValue="achievements" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="achievements">{t.gamification.achievements}</TabsTrigger>
           <TabsTrigger value="challenges">{t.gamification.challenges}</TabsTrigger>
+          <TabsTrigger value="leaderboard">Ranking</TabsTrigger>
         </TabsList>
 
         <TabsContent value="achievements" className="space-y-4 mt-6">
@@ -280,40 +257,171 @@ export function GamificationPanel() {
             </CardContent>
           </Card>
 
-          {/* Leaderboard Preview */}
-          <Card className="border-border/40 bg-card/50 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-foreground">{t.gamification.leaderboard}</CardTitle>
-              <CardDescription className="text-muted-foreground">{t.gamification.topSavers}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {leaderboard.slice(0, 5).map((user) => (
-                  <div
-                    key={user.id}
-                    className={`flex items-center justify-between rounded-lg p-3 ${
-                      user.rank === 1 ? "bg-primary/20 border border-primary/40" : "bg-background/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full font-bold ${
-                          user.rank === 1 ? "bg-accent text-accent-foreground" : "bg-muted/50 text-muted-foreground"
-                        }`}
-                      >
-                        {user.rank}
+        </TabsContent>
+
+        <TabsContent value="leaderboard" className="space-y-4 mt-6">
+          <Tabs defaultValue="global" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="global">Global Ranking</TabsTrigger>
+              <TabsTrigger value="friends">Friends Ranking</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="global" className="mt-4">
+              <Card className="border-border/40 bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="text-foreground">{t.gamification.leaderboard}</CardTitle>
+                  <CardDescription className="text-muted-foreground">{t.gamification.topSavers}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {leaderboard.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No data available</p>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{user.username}</p>
-                        <p className="text-xs text-muted-foreground">{user.totalPoints} {t.gamification.points}</p>
-                      </div>
-                    </div>
-                    {user.rank === 1 && <Crown className="h-5 w-5 text-accent" />}
+                    ) : (
+                      leaderboard.map((user) => {
+                        const avatar = user.avatar
+                        const isUrl = avatar?.startsWith('http://') || avatar?.startsWith('https://')
+
+                        return (
+                          <div
+                            key={user.userId}
+                            className={`flex items-center justify-between rounded-lg p-3 ${
+                              user.isCurrentUser
+                                ? "bg-primary/10 border-2 border-primary/40"
+                                : user.rank <= 3
+                                  ? "bg-primary/5 border border-primary/20"
+                                  : "bg-background/30"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`flex h-8 w-8 items-center justify-center rounded-full font-bold ${
+                                  user.rank === 1
+                                    ? "bg-yellow-500 text-yellow-950"
+                                    : user.rank === 2
+                                      ? "bg-gray-400 text-gray-900"
+                                      : user.rank === 3
+                                        ? "bg-orange-600 text-orange-50"
+                                        : "bg-muted/50 text-muted-foreground"
+                                }`}
+                              >
+                                {user.rank}
+                              </div>
+                              {isUrl ? (
+                                <img
+                                  src={avatar}
+                                  alt={user.username}
+                                  className="h-10 w-10 rounded-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`text-2xl ${isUrl ? 'hidden' : ''}`}>
+                                {!isUrl && (avatar || "👤")}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-foreground">{user.username}</p>
+                                  {user.isCurrentUser && (
+                                    <Badge variant="secondary" className="text-xs">You</Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.totalPoints} {t.gamification.points} • Level {user.level}
+                                </p>
+                              </div>
+                            </div>
+                            {user.rank === 1 && <Crown className="h-5 w-5 text-yellow-500" />}
+                            {user.rank === 2 && <Crown className="h-5 w-5 text-gray-400" />}
+                            {user.rank === 3 && <Crown className="h-5 w-5 text-orange-600" />}
+                          </div>
+                        )
+                      })
+                    )}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="friends" className="mt-4">
+              <Card className="border-border/40 bg-card/50 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Friends Ranking</CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    Compete with your friends and see who saves the most
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {friendsLeaderboard.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>Add friends to see your ranking</p>
+                      </div>
+                    ) : (
+                      friendsLeaderboard.map((user) => {
+                        const avatar = user.avatar
+                        const isUrl = avatar?.startsWith('http://') || avatar?.startsWith('https://')
+
+                        return (
+                          <div
+                            key={user.userId}
+                            className={`flex items-center justify-between rounded-lg p-3 ${
+                              user.isCurrentUser
+                                ? "bg-primary/10 border-2 border-primary/40"
+                                : user.rank === 1
+                                  ? "bg-primary/5 border border-primary/20"
+                                  : "bg-background/30"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`flex h-8 w-8 items-center justify-center rounded-full font-bold ${
+                                  user.rank === 1
+                                    ? "bg-accent text-accent-foreground"
+                                    : "bg-muted/50 text-muted-foreground"
+                                }`}
+                              >
+                                {user.rank}
+                              </div>
+                              {isUrl ? (
+                                <img
+                                  src={avatar}
+                                  alt={user.username}
+                                  className="h-10 w-10 rounded-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                                  }}
+                                />
+                              ) : null}
+                              <div className={`text-2xl ${isUrl ? 'hidden' : ''}`}>
+                                {!isUrl && (avatar || "👤")}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-foreground">{user.username}</p>
+                                  {user.isCurrentUser && (
+                                    <Badge variant="secondary" className="text-xs">You</Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.totalPoints} {t.gamification.points} • Level {user.level}
+                                </p>
+                              </div>
+                            </div>
+                            {user.rank === 1 && <Crown className="h-5 w-5 text-accent" />}
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

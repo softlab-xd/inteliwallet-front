@@ -39,8 +39,14 @@ export default function LoginPage() {
     try {
       if (isLogin) {
         // Login
-        await authService.login({ email, password })
-        router.push("/")
+        const response = await authService.login({ email, password })
+        console.log("✅ Login successful, user data:", response.user)
+
+        if (typeof window !== 'undefined') {
+          window.location.href = "/"
+        } else {
+          router.push("/")
+        }
       } else {
         // Register
         if (password !== confirmPassword) {
@@ -49,13 +55,18 @@ export default function LoginPage() {
           return
         }
 
-        await authService.register({ username, email, password })
-        router.push("/")
+        const response = await authService.register({ username, email, password })
+        console.log("✅ Registration successful, user data:", response.user)
+
+        if (typeof window !== 'undefined') {
+          window.location.href = "/"
+        } else {
+          router.push("/")
+        }
       }
     } catch (err: any) {
-      console.error("Auth error:", err)
-      setError(err.message || "An error occurred. Please try again.")
-    } finally {
+      console.error("❌ Auth error:", err)
+      setError(err.response?.data?.message || err.message || "An error occurred. Please try again.")
       setIsLoading(false)
     }
   }

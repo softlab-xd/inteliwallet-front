@@ -50,8 +50,12 @@ export function DashboardView() {
   }
 
   useEffect(() => {
-    if (user && !user.hasCompletedOnboarding) {
-      setShowOnboarding(true)
+    if (user) {
+      console.log("✅ User loaded in dashboard:", user)
+      if (!user.hasCompletedOnboarding) {
+        console.log("🎯 Showing onboarding for user:", user.username)
+        setShowOnboarding(true)
+      }
     }
   }, [user])
 
@@ -86,7 +90,11 @@ export function DashboardView() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-bold text-foreground truncate">{t.dashboard.title}</h1>
-                {user && <PlanBadge plan={user.plan} />}
+                {user ? (
+                  <PlanBadge plan={user.plan} />
+                ) : (
+                  <div className="h-5 w-12 bg-muted/50 animate-pulse rounded" />
+                )}
               </div>
               <p className="text-xs text-muted-foreground truncate hidden sm:block">{t.dashboard.subtitle}</p>
             </div>
