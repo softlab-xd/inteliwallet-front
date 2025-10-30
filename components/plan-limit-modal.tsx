@@ -14,7 +14,7 @@ type LimitType = 'challenges' | 'goals'
 
 interface PlanLimitModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   currentPlan: PlanType
   limitType: LimitType
   currentCount: number

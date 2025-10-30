@@ -7,7 +7,7 @@ import { pt } from "./translations/pt"
 
 interface LanguageContextType {
   language: Language
-  setLanguage: (lang: Language) => void
+  setLanguage: (_lang: Language) => void
   t: Translations
 }
 

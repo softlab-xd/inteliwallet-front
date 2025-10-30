@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react"
 
 interface AddTransactionDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   onSuccess?: () => void
 }
 

@@ -7,13 +7,11 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Users, Calendar, Trophy, Loader2, Plus } from "lucide-react"
-import { useLanguage } from "@/lib/i18n"
 import { challengeService } from "@/lib/services/challenge.service"
 import { useToast } from "@/hooks/use-toast"
 import type { Challenge } from "@/lib/types/challenge"
 
 export function AvailableChallenges() {
-  const { t } = useLanguage()
   const { toast } = useToast()
   const [challenges, setChallenges] = useState<Challenge[]>([])
   const [isLoading, setIsLoading] = useState(true)

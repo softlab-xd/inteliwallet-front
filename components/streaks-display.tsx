@@ -4,13 +4,11 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Flame, Zap, TrendingUp, Calendar, Award, Loader2 } from "lucide-react"
-import { useLanguage } from "@/lib/i18n"
 import { streakService } from "@/lib/services/streak.service"
 import { useToast } from "@/hooks/use-toast"
 import type { UserStreak } from "@/lib/types/streak"
 
 export function StreaksDisplay() {
-  const { t } = useLanguage()
   const { toast } = useToast()
   const [streaks, setStreaks] = useState<UserStreak[]>([])
   const [isLoading, setIsLoading] = useState(true)

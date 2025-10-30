@@ -21,7 +21,6 @@ import {
   Coffee,
   Car,
   Home,
-  Smartphone,
   Film,
   Heart,
   MoreHorizontal,
@@ -237,14 +236,12 @@ export function TransactionsList({ onTransactionChange }: TransactionsListProps)
         </Card>
       </div>
 
-      {/* Filters */}
       <Card className="border-border/40 bg-card/50 backdrop-blur">
         <CardHeader>
           <CardTitle className="text-foreground">{t.transactions.allTransactions}</CardTitle>
           <CardDescription className="text-muted-foreground">{t.transactions.viewAndFilter}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Search and Filters */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -283,7 +280,6 @@ export function TransactionsList({ onTransactionChange }: TransactionsListProps)
             </div>
           </div>
 
-          {/* Transactions List */}
           <div className="space-y-6">
             {Object.entries(groupedTransactions).map(([date, dayTransactions]) => (
               <div key={date} className="space-y-3">
@@ -368,7 +364,6 @@ export function TransactionsList({ onTransactionChange }: TransactionsListProps)
         </CardContent>
       </Card>
 
-      {/* Edit Transaction Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[500px] bg-card border-border/40">
           <DialogHeader>

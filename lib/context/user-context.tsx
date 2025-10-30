@@ -10,12 +10,12 @@ interface UserContextType {
   friends: Friend[]
   friendInvites: FriendInvite[]
   isLoading: boolean
-  updateUser: (userData: Partial<User>) => Promise<void>
+  updateUser: (_userData: Partial<User>) => Promise<void>
   deleteAccount: () => Promise<void>
-  addFriend: (username: string) => Promise<void>
-  removeFriend: (friendId: string) => Promise<void>
-  acceptInvite: (inviteId: string) => Promise<void>
-  declineInvite: (inviteId: string) => Promise<void>
+  addFriend: (_username: string) => Promise<void>
+  removeFriend: (_friendId: string) => Promise<void>
+  acceptInvite: (_inviteId: string) => Promise<void>
+  declineInvite: (_inviteId: string) => Promise<void>
   refreshUser: () => Promise<void>
 }
 

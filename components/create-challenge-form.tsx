@@ -19,7 +19,7 @@ import { useUser } from "@/lib/context/user-context"
 
 interface CreateChallengeFormProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   onSuccess?: () => void
 }
 

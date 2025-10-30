@@ -10,7 +10,7 @@ import { getUpgradeSuggestion } from "@/lib/utils/plan-validation"
 
 interface UpgradeModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   currentPlan: PlanType
   reason?: string
   onUpgradeClick?: () => void

@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Check, Loader2, Sparkles, Zap, Crown } from "lucide-react"
-import { useLanguage } from "@/lib/i18n"
 import { subscriptionService } from "@/lib/services/subscription.service"
 import { useToast } from "@/hooks/use-toast"
 import { PLAN_LIMITS, type PlanType } from "@/lib/types/subscription"
@@ -71,13 +70,11 @@ const plans: PlanOption[] = [
 
 interface PlanSelectorProps {
   currentPlan?: PlanType
-  onPlanSelected?: (paymentData: any) => void
+  onPlanSelected?: (_paymentData: any) => void
 }
 
 export function PlanSelector({ currentPlan = 'free', onPlanSelected }: PlanSelectorProps) {
-  const { t } = useLanguage()
   const { toast } = useToast()
-  const [selectedPlan, setSelectedPlan] = useState<'STANDARD' | 'PLUS'>('STANDARD')
   const [isLoading, setIsLoading] = useState(false)
 
   const handleUpgrade = async (planKey: 'free' | 'standard' | 'plus') => {

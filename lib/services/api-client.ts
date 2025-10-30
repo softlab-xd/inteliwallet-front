@@ -126,11 +126,19 @@ class ApiClient {
 export class ApiError extends Error {
   constructor(
     message: string,
-    public status: number,
-    public data?: unknown
+    public _status: number,
+    public _data?: unknown
   ) {
     super(message)
     this.name = "ApiError"
+  }
+
+  get status() {
+    return this._status
+  }
+
+  get data() {
+    return this._data
   }
 }
 

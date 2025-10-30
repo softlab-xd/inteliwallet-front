@@ -12,7 +12,7 @@ import type { Payment } from "@/lib/types/subscription"
 
 interface PaymentModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   paymentData: Payment | null
   onPaymentSuccess?: () => void
 }

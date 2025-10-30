@@ -13,13 +13,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Users, Calendar, Trophy, Loader2, DollarSign, LogOut, Crown } from "lucide-react"
-import { useLanguage } from "@/lib/i18n"
 import { challengeService } from "@/lib/services/challenge.service"
 import { useToast } from "@/hooks/use-toast"
 import type { Challenge } from "@/lib/types/challenge"
 
 export function MyChallenges() {
-  const { t } = useLanguage()
   const { toast } = useToast()
   const [challenges, setChallenges] = useState<Challenge[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -121,10 +119,6 @@ export function MyChallenges() {
       default:
         return 'bg-muted text-muted-foreground'
     }
-  }
-
-  const isCreator = (challenge: Challenge) => {
-    return challenge.topContributors.some(c => c.isCreator)
   }
 
   if (isLoading) {

@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Smile, Activity, Heart, Briefcase, Rocket, Trophy, Star } from "lucide-react"
+import { Search, Smile, Activity, Heart, Briefcase, Trophy, Star } from "lucide-react"
 
 interface EmojiPickerModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   currentEmoji?: string
-  onEmojiSelect: (emoji: string) => void
+  onEmojiSelect: (_emoji: string) => void
 }
 
 const emojiCategories = {
