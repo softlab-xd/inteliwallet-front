@@ -22,6 +22,9 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Create public directory if it doesn't exist (for Next.js compatibility)
+RUN mkdir -p public
+
 # Build the application
 RUN npm run build
 
