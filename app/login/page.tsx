@@ -38,27 +38,22 @@ export default function LoginPage() {
 
     try {
       if (isLogin) {
-        // Login
         const response = await authService.login({ email, password })
         console.log("✅ Login successful, user data:", response.user)
-
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.location.href = "/"
         } else {
           router.push("/")
         }
       } else {
-        // Register
         if (password !== confirmPassword) {
           setError(t.auth.passwordMismatch)
           setIsLoading(false)
           return
         }
-
         const response = await authService.register({ username, email, password })
         console.log("✅ Registration successful, user data:", response.user)
-
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           window.location.href = "/"
         } else {
           router.push("/")
@@ -74,6 +69,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 items-center justify-center perspective-[2000px]">
+
+        {/* Lado esquerdo - Form */}
         <div
           className={`w-full lg:w-1/2 transition-all duration-500 ease-in-out ${
             isFlipping ? "opacity-0 scale-95 rotate-y-12" : "opacity-100 scale-100 rotate-y-0"
@@ -199,13 +196,14 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Lado direito - Benefícios */}
         <div
           className={`w-full lg:w-1/2 transition-all duration-500 ease-in-out ${
             isFlipping ? "opacity-0 scale-95 -rotate-y-12" : "opacity-100 scale-100 rotate-y-0"
           } ${!isLogin ? "lg:order-1" : "lg:order-2"}`}
           style={{ transformStyle: "preserve-3d" }}
         >
-          <div className="bg-linear-to-br from-primary/20 to-accent/20 backdrop-blur border border-border/40 rounded-2xl p-8 sm:p-12 shadow-2xl">
+          <div className="bg-linear-to-br from-primary/20 to-accent/20 backdrop-blur border border-border/40 rounded-2xl p-8 sm:p-12 shadow-2xl flex flex-col justify-between">
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl font-bold text-foreground mb-3">
@@ -217,62 +215,63 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-6">
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 shrink-0">
                     <Check className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{t.auth.feature1}</h3>
-                  </div>
+                  <h3 className="font-semibold text-foreground leading-snug">
+                    {t.auth.feature1}
+                  </h3>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20 shrink-0">
                     <Target className="h-5 w-5 text-accent" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{t.auth.feature2}</h3>
-                  </div>
+                  <h3 className="font-semibold text-foreground leading-snug">
+                    {t.auth.feature2}
+                  </h3>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 shrink-0">
                     <Trophy className="h-5 w-5 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{t.auth.feature3}</h3>
-                  </div>
+                  <h3 className="font-semibold text-foreground leading-snug">
+                    {t.auth.feature3}
+                  </h3>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20 shrink-0">
                     <TrendingUp className="h-5 w-5 text-accent" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{t.auth.feature4}</h3>
-                  </div>
+                  <h3 className="font-semibold text-foreground leading-snug">
+                    {t.auth.feature4}
+                  </h3>
                 </div>
               </div>
+            </div>
 
-              <div className="pt-8 border-t border-border/40">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-3xl font-bold text-primary">10k+</div>
-                    <div className="text-sm text-muted-foreground">Users</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-accent">50k+</div>
-                    <div className="text-sm text-muted-foreground">Goals</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-primary">100k+</div>
-                    <div className="text-sm text-muted-foreground">Achievements</div>
-                  </div>
+            <div className="pt-8 border-t border-border/40">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-3xl font-bold text-primary">10k+</div>
+                  <div className="text-sm text-muted-foreground">Users</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-accent">50k+</div>
+                  <div className="text-sm text-muted-foreground">Goals</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-primary">100k+</div>
+                  <div className="text-sm text-muted-foreground">Achievements</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   )
