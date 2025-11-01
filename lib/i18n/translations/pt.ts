@@ -69,7 +69,8 @@ export const pt: Translations = {
     passwordMismatch: "As senhas não coincidem",
     appName: "InteliWallet",
     appTagline: "Planilha Financeira Gamificada",
-    appDescription: "Transforme suas finanças em um jogo envolvente com insights inteligentes, acompanhamento de progresso e recompensas.",
+    appDescription:
+      "Transforme suas finanças em um jogo envolvente com insights inteligentes, acompanhamento de progresso e recompensas.",
     feature1: "Acompanhe receitas e despesas de forma divertida",
     feature2: "Defina metas e suba de nível nas finanças",
     feature3: "Desbloqueie conquistas e ganhe recompensas",
@@ -92,7 +93,8 @@ export const pt: Translations = {
     updateProfile: "Atualizar Perfil",
     deleteAccount: "Excluir Conta",
     deleteAccountConfirm: "Tem certeza que deseja excluir sua conta?",
-    deleteAccountWarning: "Esta ação não pode ser desfeita. Todos os seus dados serão permanentemente excluídos.",
+    deleteAccountWarning:
+      "Esta ação não pode ser desfeita. Todos os seus dados serão permanentemente excluídos.",
     profileUpdated: "Perfil atualizado com sucesso",
     passwordUpdated: "Senha atualizada com sucesso",
     accountDeleted: "Conta excluída com sucesso",
@@ -102,7 +104,8 @@ export const pt: Translations = {
     friendUsername: "Nome do Amigo",
     searchFriends: "Buscar amigos...",
     noFriends: "Nenhum amigo ainda",
-    friendsDescription: "Conecte-se com amigos para comparar progresso",
+    friendsDescription:
+      "Conecte-se com amigos para comparar progresso",
     rank: "Rank",
     points: "Pontos",
     removeFriend: "Remover Amigo",
@@ -142,7 +145,8 @@ export const pt: Translations = {
     totalIncome: "Total de Receitas",
     totalExpenses: "Total de Despesas",
     allTransactions: "Todas as Transações",
-    viewAndFilter: "Visualize e filtre seu histórico de transações",
+    viewAndFilter:
+      "Visualize e filtre seu histórico de transações",
     searchPlaceholder: "Buscar transações...",
     allTypes: "Todos os Tipos",
     expense: "Despesa",
@@ -153,7 +157,8 @@ export const pt: Translations = {
     noTransactionsFound: "Nenhuma transação encontrada",
     tryAdjusting: "Tente ajustar sua busca ou filtros",
     addTransaction: "Adicionar Transação",
-    addTransactionDescription: "Registre uma nova receita ou despesa",
+    addTransactionDescription:
+      "Registre uma nova receita ou despesa",
     amount: "Valor",
     description: "Descrição",
     category: "Categoria",
@@ -185,15 +190,18 @@ export const pt: Translations = {
     ofTarget: "da meta",
     toReachAll: "Para alcançar todas as metas",
     overallProgress: "Progresso Geral",
-    combinedProgress: "Progresso combinado de todas as metas",
+    combinedProgress:
+      "Progresso combinado de todas as metas",
     totalProgress: "Progresso Total",
     saved: "Economizado",
     target: "Meta",
     yourGoals: "Suas Metas",
-    trackAndManage: "Acompanhe e gerencie suas metas financeiras",
+    trackAndManage:
+      "Acompanhe e gerencie suas metas financeiras",
     addGoal: "Adicionar Meta",
     createNewGoal: "Criar Nova Meta",
-    setNewGoal: "Defina uma nova meta financeira para acompanhar seu progresso",
+    setNewGoal:
+      "Defina uma nova meta financeira para acompanhar seu progresso",
     goalTitle: "Título da Meta",
     targetAmount: "Valor da Meta",
     deadline: "Prazo",
@@ -220,7 +228,8 @@ export const pt: Translations = {
     activeChallenges: "Desafios Ativos",
     challenges: "Desafios",
     weeklyChallenges: "Desafios Semanais",
-    completeChallenges: "Complete desafios para ganhar pontos bônus",
+    completeChallenges:
+      "Complete desafios para ganhar pontos bônus",
     completed: "Concluído!",
     daysLeft: "dias restantes",
     leaderboard: "Ranking",
@@ -236,14 +245,65 @@ export const pt: Translations = {
   },
   onboarding: {
     step1Title: "Bem-vindo ao InteliWallet!",
-    step1Description: "Sua carteira financeira gamificada. Transforme o controle de finanças em algo divertido e envolvente.",
+    step1Description:
+      "Sua carteira financeira gamificada. Transforme o controle de finanças em algo divertido e envolvente.",
     step2Title: "Adicione Transações",
-    step2Description: "Clique no botão + para registrar suas receitas e despesas. Categorize e acompanhe para onde seu dinheiro está indo.",
+    step2Description:
+      "Clique no botão + para registrar suas receitas e despesas. Categorize e acompanhe para onde seu dinheiro está indo.",
     step3Title: "Defina Metas",
-    step3Description: "Crie metas de economia e acompanhe seu progresso. Seja um fundo de emergência ou aquela viagem dos sonhos!",
+    step3Description:
+      "Crie metas de economia e acompanhe seu progresso. Seja um fundo de emergência ou aquela viagem dos sonhos!",
     step4Title: "Ganhe Conquistas",
-    step4Description: "Complete desafios, desbloqueie conquistas e suba de nível. Quanto mais você gerencia, mais recompensas ganha!",
+    step4Description:
+      "Complete desafios, desbloqueie conquistas e suba de nível. Quanto mais você gerencia, mais recompensas ganha!",
     step5Title: "Você está pronto!",
-    step5Description: "Comece agora a transformar suas finanças. Acompanhe gastos, alcance metas e divirta-se no processo!",
+    step5Description:
+      "Comece agora a transformar suas finanças. Acompanhe gastos, alcance metas e divirta-se no processo!",
+  },
+
+  plans: {
+    chooseTitle: "Escolha seu Plano",
+    chooseSubtitle:
+      "Desbloqueie mais recursos e alcance suas metas financeiras mais rápido",
+
+    mostPopular: "Mais Popular",
+    active: "Ativo",
+
+    freeName: "Free",
+    standardName: "Standard",
+    plusName: "Plus",
+
+    perMonth: "/mês",
+    foreverFree: "Gratuito para sempre",
+
+    currentPlan: "Plano Atual",
+    upgradeNow: "Fazer Upgrade",
+    freeForever: "Gratuito para sempre",
+    processing: "Processando...",
+
+    redirectingTitle: "Redirecionando...",
+    redirectingDesc: "Levando você para a página de pagamento",
+    successTitle: "Sucesso!",
+    successDesc:
+      "Pagamento criado. Conclua o pagamento para ativar seu plano.",
+    alreadyOnPlanTitle: "Plano Atual",
+    alreadyOnPlanDesc: "Você já está nesse plano.",
+    alreadyFreeTitle: "Plano Gratuito",
+    alreadyFreeDesc: "Nenhum pagamento é necessário para o plano gratuito.",
+
+    comparisonTitle: "Comparação de Planos",
+    comparisonDescription:
+      "Veja o que você pode fazer em cada plano",
+
+    table: {
+      feature: "Recurso",
+      activeGoals: "Metas Ativas",
+      createChallenges: "Criar Desafios",
+      joinChallenges: "Participar de Desafios",
+      price: "Preço",
+      unlimited: "Ilimitado",
+      free: "Grátis",
+      perMonthShort: "R$ {price}/mês",
+    },
   },
 }
