@@ -1,7 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -139,13 +145,19 @@ export function EmojiPickerModal({
           </div>
 
           <Tabs defaultValue="smileys" className="w-full">
-            <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
+            <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full gap-y-2 rounded-md bg-muted/20 p-2">
               {Object.entries(emojiCategories).map(([key, category]) => {
                 const Icon = category.icon
                 return (
-                  <TabsTrigger key={key} value={key} className="gap-1">
-                    <Icon className="h-4 w-4" />
-                    <span className="hidden lg:inline">{category.label}</span>
+                  <TabsTrigger
+                    key={key}
+                    value={key}
+                    className="flex items-center justify-center gap-1 px-2 py-[2px] text-[10px] leading-none whitespace-nowrap
+                               data-[state=active]:bg-muted data-[state=active]:text-foreground
+                               rounded-sm transition-colors"
+                  >
+                    <Icon className="h-3 w-3 shrink-0" />
+                    <span>{category.label}</span>
                   </TabsTrigger>
                 )
               })}

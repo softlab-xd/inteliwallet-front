@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/lib/i18n"
+import { useState } from "react";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n";
 import {
   Wallet,
   TrendingUp,
@@ -12,86 +12,97 @@ import {
   Plus,
   ArrowRight,
   ArrowLeft,
-  Check
-} from "lucide-react"
+  Check,
+} from "lucide-react";
 
 interface OnboardingProps {
-  open: boolean
-  onComplete: () => void
+  open: boolean;
+  onComplete: () => void;
 }
 
 interface Step {
-  icon: React.ReactNode
-  title: string
-  description: string
-  color: string
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: string;
 }
 
 export function Onboarding({ open, onComplete }: OnboardingProps) {
-  const { t } = useLanguage()
-  const [currentStep, setCurrentStep] = useState(0)
+  const { t } = useLanguage();
+  const [currentStep, setCurrentStep] = useState(0);
 
   const steps: Step[] = [
     {
       icon: <Wallet className="h-16 w-16" />,
       title: t.onboarding?.step1Title || "Bem-vindo ao InteliWallet!",
-      description: t.onboarding?.step1Description || "Sua carteira financeira gamificada. Transforme o controle de finanças em algo divertido e envolvente.",
+      description:
+        t.onboarding?.step1Description ||
+        "Sua carteira financeira gamificada. Transforme o controle de finanças em algo divertido e envolvente.",
       color: "text-primary",
     },
     {
       icon: <Plus className="h-16 w-16" />,
       title: t.onboarding?.step2Title || "Adicione Transações",
-      description: t.onboarding?.step2Description || "Clique no botão + para registrar suas receitas e despesas. Categorize e acompanhe para onde seu dinheiro está indo.",
+      description:
+        t.onboarding?.step2Description ||
+        "Clique no botão + para registrar suas receitas e despesas. Categorize e acompanhe para onde seu dinheiro está indo.",
       color: "text-accent",
     },
     {
       icon: <Target className="h-16 w-16" />,
       title: t.onboarding?.step3Title || "Defina Metas",
-      description: t.onboarding?.step3Description || "Crie metas de economia e acompanhe seu progresso. Seja um fundo de emergência ou aquela viagem dos sonhos!",
+      description:
+        t.onboarding?.step3Description ||
+        "Crie metas de economia e acompanhe seu progresso. Seja um fundo de emergência ou aquela viagem dos sonhos!",
       color: "text-primary",
     },
     {
       icon: <Trophy className="h-16 w-16" />,
       title: t.onboarding?.step4Title || "Ganhe Conquistas",
-      description: t.onboarding?.step4Description || "Complete desafios, desbloqueie conquistas e suba de nível. Quanto mais você gerencia, mais recompensas ganha!",
+      description:
+        t.onboarding?.step4Description ||
+        "Complete desafios, desbloqueie conquistas e suba de nível. Quanto mais você gerencia, mais recompensas ganha!",
       color: "text-accent",
     },
     {
       icon: <TrendingUp className="h-16 w-16" />,
       title: t.onboarding?.step5Title || "Você está pronto!",
-      description: t.onboarding?.step5Description || "Comece agora a transformar suas finanças. Acompanhe gastos, alcance metas e divirta-se no processo!",
+      description:
+        t.onboarding?.step5Description ||
+        "Comece agora a transformar suas finanças. Acompanhe gastos, alcance metas e divirta-se no processo!",
       color: "text-primary",
     },
-  ]
+  ];
 
-  const isLastStep = currentStep === steps.length - 1
-  const isFirstStep = currentStep === 0
+  const isLastStep = currentStep === steps.length - 1;
+  const isFirstStep = currentStep === 0;
 
   const handleNext = () => {
     if (isLastStep) {
-      onComplete()
+      onComplete();
     } else {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const handleBack = () => {
     if (!isFirstStep) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleSkip = () => {
-    onComplete()
-  }
+    onComplete();
+  };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent
-        className="sm:max-w-[600px] bg-card border-border/40"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onComplete();
+      }}
+    >
+      <DialogContent className="sm:max-w-[600px] bg-card border-border/40">
         <div className="py-8">
           {/* Progress Indicators */}
           <div className="flex justify-center gap-2 mb-8">
@@ -162,5 +173,5 @@ export function Onboarding({ open, onComplete }: OnboardingProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
