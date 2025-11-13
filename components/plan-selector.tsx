@@ -246,7 +246,7 @@ export function PlanSelector({
             <CardFooter>
               <Button
                 onClick={() => handleUpgrade(plan.key)}
-                disabled={isLoading || isPlanActive(plan.key)}
+                disabled={true}
                 className="w-full"
                 variant={plan.highlighted ? "default" : "outline"}
               >
