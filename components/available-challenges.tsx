@@ -11,6 +11,7 @@ import { challengeService } from "@/lib/services/challenge.service"
 import { useToast } from "@/hooks/use-toast"
 import type { Challenge } from "@/lib/types/challenge"
 
+
 export function AvailableChallenges() {
   const { toast } = useToast()
   const [challenges, setChallenges] = useState<Challenge[]>([])
