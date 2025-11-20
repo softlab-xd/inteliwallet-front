@@ -109,7 +109,6 @@ export function AvailableChallenges() {
           {challenges.length} {challenges.length === 1 ? 'Challenge' : 'Challenges'}
         </Badge>
       </div>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {challenges.map((challenge) => (
           <Card key={challenge.id} className="hover:shadow-lg transition-shadow">
@@ -134,7 +133,6 @@ export function AvailableChallenges() {
                 {challenge.description}
               </CardDescription>
             </CardHeader>
-
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -149,7 +147,6 @@ export function AvailableChallenges() {
                   <span>R$ {challenge.targetAmount.toFixed(2)}</span>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -164,7 +161,6 @@ export function AvailableChallenges() {
                   </span>
                 </div>
               </div>
-
               <div className="flex items-center justify-between pt-2 border-t">
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-yellow-500" />
@@ -174,7 +170,6 @@ export function AvailableChallenges() {
                 </div>
                 <Badge variant="outline">{challenge.category}</Badge>
               </div>
-
               <Button
                 onClick={() => handleJoinChallenge(challenge.id)}
                 disabled={

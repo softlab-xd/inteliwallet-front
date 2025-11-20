@@ -71,7 +71,6 @@ export function DashboardView() {
       }
     }
   }, [user])
-
   const handleLogout = async () => {
     try {
       await authService.logout()
@@ -81,7 +80,6 @@ export function DashboardView() {
       router.push("/login")
     }
   }
-
   const handleCompleteOnboarding = async () => {
     try {
       await userService.updateProfile({ hasCompletedOnboarding: true } as any)
@@ -91,7 +89,6 @@ export function DashboardView() {
       setShowOnboarding(false)
     }
   }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -120,9 +117,7 @@ export function DashboardView() {
           </div>
         </div>
       </header>
-
       <div className="flex flex-1">
-       
   <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
   <nav className="space-y-2 p-4">
     <div className="grid gap-1">
@@ -133,7 +128,6 @@ export function DashboardView() {
           onMouseEnter={() => setHoveredView(item.id)}
           onMouseLeave={() => setHoveredView(null)}
         >
-          {/* A "mágica" da animação de fundo */}
           <AnimatePresence>
             {hoveredView === item.id && (
               <motion.div
@@ -146,10 +140,8 @@ export function DashboardView() {
               />
             )}
           </AnimatePresence>
-
           <Button
             variant="ghost"
-      
             className={`cursor-pointer border-none outline-none ring-0 focus:ring-0 relative w-full justify-start gap-3 z-10 transition-all duration-300 
               ${currentView === item.id
                 ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-800"
@@ -166,8 +158,6 @@ export function DashboardView() {
         </div>
       ))}
     </div>
-
-    {/* Botão de Logout */}
     <div className="pt-2 border-t border-border/40 mt-2">
       <Button
         variant="ghost"
@@ -186,7 +176,6 @@ export function DashboardView() {
     </div>
   </nav>
 </aside>
-
         <main className="flex-1 overflow-auto">
           <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
             {currentView === "dashboard" && <SpendingDashboard refreshTrigger={refreshTrigger} />}
@@ -197,25 +186,19 @@ export function DashboardView() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl font-bold">Challenges</h1>
-
       <Button 
         onClick={() => setShowCreateChallenge(true)}
           className="cursor-pointer group"
         >
           <Plus 
-              // hover para o botao create chall
           className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" 
         />
         Create Challenge
       </Button>
-
                 </div>
-                {/* tab para ative tab */}
 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-  
-  {/* tablist animada */}
   <div className="relative grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl mb-6">
-    {/*Available */}
+  
     <button
       onClick={() => setActiveTab("available")}
       className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer"
@@ -232,8 +215,6 @@ export function DashboardView() {
         />
       )}
     </button>
-
-    {/*My Challenges */}
     <button
       onClick={() => setActiveTab("my")}
       className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer"
@@ -251,8 +232,6 @@ export function DashboardView() {
       )}
     </button>
   </div>
-
-  {/* O CONTEÚDO DAS ABAS PERMANECE IGUAL, APENAS VERIFIQUE SE OS 'VALUES' BATEM */}
   <TabsContent value="available" className="mt-0">
     <AvailableChallenges key={refreshTrigger} />
   </TabsContent>
@@ -260,7 +239,6 @@ export function DashboardView() {
   <TabsContent value="my" className="mt-0">
     <MyChallenges key={refreshTrigger} />
   </TabsContent>
-
 </Tabs>
               </div>
             )}
@@ -278,7 +256,6 @@ export function DashboardView() {
           </div>
         </main>
       </div>
-
   <Button
   size="icon"
   className="cursor-pointer fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40
@@ -291,19 +268,16 @@ export function DashboardView() {
                drop-shadow-[0_0_5px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,1)]"
   />
 </Button>
-
       <AddTransactionDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={handleTransactionChange}
       />
-
       <CreateChallengeForm
         open={showCreateChallenge}
         onOpenChange={setShowCreateChallenge}
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
       />
-
       <PaymentModal
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
@@ -314,14 +288,12 @@ export function DashboardView() {
           setShowPaymentModal(false)
         }}
       />
-
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
         currentPlan={user?.plan || 'free'}
         onUpgradeClick={() => handleViewChange('subscription')}
       />
-
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around p-2 gap-1">
           <Button
@@ -380,7 +352,6 @@ export function DashboardView() {
           </Button>
         </div>
       </nav>
-
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
     </div>
   )
