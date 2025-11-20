@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, Flame, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { SpendingDashboard } from "@/components/spending-dashboard"
 import { TransactionsList } from "@/components/transactions-list"
 import { GoalsTracker } from "@/components/goals-tracker"
@@ -25,6 +25,8 @@ import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService, authService } from "@/lib/services"
 import type { Payment } from "@/lib/types/subscription"
+import { motion, AnimatePresence } from "framer-motion";
+
 
 type View = "dashboard" | "transactions" | "goals" | "achievements" | "challenges" | "streaks" | "subscription" | "profile"
 
@@ -39,7 +41,18 @@ export function DashboardView() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [paymentData, setPaymentData] = useState<Payment | null>(null)
+  const [hoveredView, setHoveredView] = useState<string | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [activeTab, setActiveTab] = useState("available");
+  const navItems = [
+    { id: "dashboard", label: t.navigation.dashboard, icon: TrendingUp },
+    { id: "transactions", label: t.navigation.transactions, icon: Wallet },
+    { id: "goals", label: t.navigation.goals, icon: Target },
+    { id: "achievements", label: t.navigation.achievements, icon: Trophy },
+    { id: "challenges", label: "Challenges", icon: Users }, 
+    { id: "streaks", label: "Streaks", icon: Flame },       
+    { id: "subscription", label: "Plans", icon: Crown },    
+    { id: "profile", label: t.navigation.profile, icon: User } ]
 
   const handleViewChange = (view: View) => {
     setCurrentView(view)
@@ -58,7 +71,6 @@ export function DashboardView() {
       }
     }
   }, [user])
-
   const handleLogout = async () => {
     try {
       await authService.logout()
@@ -68,7 +80,6 @@ export function DashboardView() {
       router.push("/login")
     }
   }
-
   const handleCompleteOnboarding = async () => {
     try {
       await userService.updateProfile({ hasCompletedOnboarding: true } as any)
@@ -78,7 +89,6 @@ export function DashboardView() {
       setShowOnboarding(false)
     }
   }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -107,87 +117,65 @@ export function DashboardView() {
           </div>
         </div>
       </header>
-
       <div className="flex flex-1">
-        <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
-          <nav className="space-y-2 p-4">
-            <Button
-              variant={currentView === "dashboard" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("dashboard")}
-            >
-              <TrendingUp className="h-5 w-5" />
-              {t.navigation.dashboard}
-            </Button>
-            <Button
-              variant={currentView === "transactions" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("transactions")}
-            >
-              <Wallet className="h-5 w-5" />
-              {t.navigation.transactions}
-            </Button>
-            <Button
-              variant={currentView === "goals" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("goals")}
-            >
-              <Target className="h-5 w-5" />
-              {t.navigation.goals}
-            </Button>
-            <Button
-              variant={currentView === "achievements" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("achievements")}
-            >
-              <Trophy className="h-5 w-5" />
-              {t.navigation.achievements}
-            </Button>
-            <Button
-              variant={currentView === "challenges" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("challenges")}
-            >
-              <Users className="h-5 w-5" />
-              Challenges
-            </Button>
-            <Button
-              variant={currentView === "streaks" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("streaks")}
-            >
-              <Flame className="h-5 w-5" />
-              Streaks
-            </Button>
-            <Button
-              variant={currentView === "subscription" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("subscription")}
-            >
-              <Crown className="h-5 w-5" />
-              Plans
-            </Button>
-            <Button
-              variant={currentView === "profile" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("profile")}
-            >
-              <User className="h-5 w-5" />
-              {t.navigation.profile}
-            </Button>
-            <div className="pt-2 border-t border-border/40">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-5 w-5" />
-                {t.profile.logout}
-              </Button>
-            </div>
-          </nav>
-        </aside>
-
+  <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
+  <nav className="space-y-2 p-4">
+    <div className="grid gap-1">
+      {navItems.map((item) => (
+        <div
+          key={item.id}
+          className="relative"
+          onMouseEnter={() => setHoveredView(item.id)}
+          onMouseLeave={() => setHoveredView(null)}
+        >
+          <AnimatePresence>
+            {hoveredView === item.id && (
+              <motion.div
+                layoutId="hover-bg"
+                className="absolute inset-0 bg-purple-900 rounded-md"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
+              />
+            )}
+          </AnimatePresence>
+          <Button
+            variant="ghost"
+            className={`cursor-pointer border-none outline-none ring-0 focus:ring-0 relative w-full justify-start gap-3 z-10 transition-all duration-300 
+              ${currentView === item.id
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-800"
+                : "hover:bg-transparent text-muted-foreground hover:text-foreground"
+              }
+            `}
+            onClick={() => handleViewChange(item.id as any)}
+          >
+            <item.icon className={`h-5 w-5 ${currentView === item.id ? "text-yellow-300 drop-shadow-[0_0_2px_rgba(253,224,71,0.8)]" : ""}`} />
+            <span className={currentView === item.id ? "font-bold" : ""}>
+              {item.label}
+            </span>
+          </Button>
+        </div>
+      ))}
+    </div>
+    <div className="pt-2 border-t border-border/40 mt-2">
+      <Button
+        variant="ghost"
+        className="cursor-pointer border-none outline-none ring-0 focus:ring-0 w-full justify-start gap-3 mt-2 transition-all duration-300 group
+          text-muted-foreground
+          hover:text-white
+          hover:bg-red-500/70
+          hover:shadow-[0_0_20px_rgba(239,68,68,0.6)]"
+        onClick={handleLogout}
+      >
+        <LogOut className="h-5 w-5 transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,1)]" />
+        <span className="group-hover:font-bold group-hover:drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">
+          {t.profile.logout}
+        </span>
+      </Button>
+    </div>
+  </nav>
+</aside>
         <main className="flex-1 overflow-auto">
           <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
             {currentView === "dashboard" && <SpendingDashboard refreshTrigger={refreshTrigger} />}
@@ -198,23 +186,60 @@ export function DashboardView() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h1 className="text-3xl font-bold">Challenges</h1>
-                  <Button onClick={() => setShowCreateChallenge(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Challenge
-                  </Button>
+      <Button 
+        onClick={() => setShowCreateChallenge(true)}
+          className="cursor-pointer group"
+        >
+          <Plus 
+          className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" 
+        />
+        Create Challenge
+      </Button>
                 </div>
-                <Tabs defaultValue="available" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="available">Available</TabsTrigger>
-                    <TabsTrigger value="my">My Challenges</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="available">
-                    <AvailableChallenges key={refreshTrigger} />
-                  </TabsContent>
-                  <TabsContent value="my">
-                    <MyChallenges key={refreshTrigger} />
-                  </TabsContent>
-                </Tabs>
+<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+  <div className="relative grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl mb-6">
+  
+    <button
+      onClick={() => setActiveTab("available")}
+      className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer"
+    >
+      <span className={`relative z-20 ${activeTab === "available" ? "text-white" : "text-muted-foreground"}`}>
+        Available
+      </span>
+      {activeTab === "available" && (
+        <motion.div
+          layoutId="active-tab-bg"
+          className="absolute inset-0 bg-purple-800 rounded-lg shadow-md"
+          initial={false}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      )}
+    </button>
+    <button
+      onClick={() => setActiveTab("my")}
+      className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer"
+    >
+      <span className={`relative z-20 ${activeTab === "my" ? "text-white" : "text-muted-foreground"}`}>
+        My Challenges
+      </span>
+      {activeTab === "my" && (
+        <motion.div
+          layoutId="active-tab-bg"
+          className="absolute inset-0 bg-purple-800 rounded-lg shadow-md"
+          initial={false}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      )}
+    </button>
+  </div>
+  <TabsContent value="available" className="mt-0">
+    <AvailableChallenges key={refreshTrigger} />
+  </TabsContent>
+  
+  <TabsContent value="my" className="mt-0">
+    <MyChallenges key={refreshTrigger} />
+  </TabsContent>
+</Tabs>
               </div>
             )}
             {currentView === "streaks" && <StreaksDisplay key={refreshTrigger} />}
@@ -231,27 +256,28 @@ export function DashboardView() {
           </div>
         </main>
       </div>
-
-      <Button
-        size="icon"
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40"
-        onClick={() => setShowAddDialog(true)}
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
-
+  <Button
+  size="icon"
+  className="cursor-pointer fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40
+             group overflow-hidden outline-none ring-0 focus:ring-0
+             hover:shadow-[0_0_20px_rgba(168,85,247,0.8)] transition-all duration-300"
+  onClick={() => setShowAddDialog(true)}
+>
+  <Plus
+    className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90
+               drop-shadow-[0_0_5px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,1)]"
+  />
+</Button>
       <AddTransactionDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={handleTransactionChange}
       />
-
       <CreateChallengeForm
         open={showCreateChallenge}
         onOpenChange={setShowCreateChallenge}
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
       />
-
       <PaymentModal
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
@@ -262,14 +288,12 @@ export function DashboardView() {
           setShowPaymentModal(false)
         }}
       />
-
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
         currentPlan={user?.plan || 'free'}
         onUpgradeClick={() => handleViewChange('subscription')}
       />
-
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around p-2 gap-1">
           <Button
@@ -328,7 +352,6 @@ export function DashboardView() {
           </Button>
         </div>
       </nav>
-
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
     </div>
   )
