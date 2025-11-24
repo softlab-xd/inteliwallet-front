@@ -16,6 +16,7 @@ export const pt: Translations = {
     skip: "Pular",
     next: "Próximo",
     finish: "Começar",
+    error: "Erro",
   },
   months: {
     jan: "Jan",
@@ -46,6 +47,7 @@ export const pt: Translations = {
     goals: "Metas",
     achievements: "Conquistas",
     profile: "Perfil",
+    challenges: "Desafios",
   },
   auth: {
     login: "Entrar",
@@ -113,6 +115,7 @@ export const pt: Translations = {
     accept: "Aceitar",
     decline: "Recusar",
     logout: "Sair",
+    logoutConfirm: "Tem certeza que deseja sair da sua conta?",
   },
   dashboard: {
     title: "SmartWallet",
@@ -214,6 +217,9 @@ export const pt: Translations = {
     createGoal: "Criar Meta",
     goalTitlePlaceholder: "ex: Fundo de Emergência",
     categoryPlaceholder: "ex: Poupança, Viagem, Tecnologia",
+    goalCreated: "Meta Criada",
+    goalCreatedDesc: "Sua meta foi criada com sucesso",
+    goalCreationFailed: "Falha ao criar meta",
   },
   gamification: {
     level: "Nível",
@@ -236,6 +242,9 @@ export const pt: Translations = {
     topSavers: "Maiores poupadores este mês",
     you: "Você",
     points: "pontos",
+    createChallenge: "Criar Desafio",
+    available: "Disponíveis",
+    myChallenges: "Meus Desafios",
     rarities: {
       common: "Comum",
       rare: "Raro",
@@ -244,66 +253,20 @@ export const pt: Translations = {
     },
   },
   onboarding: {
-    step1Title: "Bem-vindo ao InteliWallet!",
+    step1Title: "Bem-vindo ao InteliWallet",
     step1Description:
-      "Sua carteira financeira gamificada. Transforme o controle de finanças em algo divertido e envolvente.",
-    step2Title: "Adicione Transações",
+      "Seu centro de controle financeiro gamificado. Acompanhe seu dinheiro, defina metas e torne o gerenciamento financeiro divertido e recompensador.",
+    step2Title: "Acompanhe suas Finanças",
     step2Description:
-      "Clique no botão + para registrar suas receitas e despesas. Categorize e acompanhe para onde seu dinheiro está indo.",
-    step3Title: "Defina Metas",
+      "Visualize seu painel com receitas, despesas e padrões de gastos. Todos os seus dados financeiros em um só lugar com gráficos bonitos.",
+    step3Title: "Defina Metas Financeiras",
     step3Description:
-      "Crie metas de economia e acompanhe seu progresso. Seja um fundo de emergência ou aquela viagem dos sonhos!",
-    step4Title: "Ganhe Conquistas",
+      "Crie metas de economia e acompanhe o progresso. Seja um fundo de emergência, viagem ou novo aparelho - mantenha-se motivado!",
+    step4Title: "Desbloqueie Conquistas",
     step4Description:
-      "Complete desafios, desbloqueie conquistas e suba de nível. Quanto mais você gerencia, mais recompensas ganha!",
-    step5Title: "Você está pronto!",
+      "Complete desafios, ganhe pontos e suba de nível. Transforme responsabilidade financeira em um jogo envolvente com recompensas reais.",
+    step5Title: "Participe de Desafios",
     step5Description:
-      "Comece agora a transformar suas finanças. Acompanhe gastos, alcance metas e divirta-se no processo!",
-  },
-
-  plans: {
-    chooseTitle: "Escolha seu Plano",
-    chooseSubtitle:
-      "Desbloqueie mais recursos e alcance suas metas financeiras mais rápido",
-
-    mostPopular: "Mais Popular",
-    active: "Ativo",
-
-    freeName: "Free",
-    standardName: "Standard",
-    plusName: "Plus",
-
-    perMonth: "/mês",
-    foreverFree: "Gratuito para sempre",
-
-    currentPlan: "Plano Atual",
-    upgradeNow: "Fazer Upgrade",
-    freeForever: "Gratuito para sempre",
-    processing: "Processando...",
-
-    redirectingTitle: "Redirecionando...",
-    redirectingDesc: "Levando você para a página de pagamento",
-    successTitle: "Sucesso!",
-    successDesc:
-      "Pagamento criado. Conclua o pagamento para ativar seu plano.",
-    alreadyOnPlanTitle: "Plano Atual",
-    alreadyOnPlanDesc: "Você já está nesse plano.",
-    alreadyFreeTitle: "Plano Gratuito",
-    alreadyFreeDesc: "Nenhum pagamento é necessário para o plano gratuito.",
-
-    comparisonTitle: "Comparação de Planos",
-    comparisonDescription:
-      "Veja o que você pode fazer em cada plano",
-
-    table: {
-      feature: "Recurso",
-      activeGoals: "Metas Ativas",
-      createChallenges: "Criar Desafios",
-      joinChallenges: "Participar de Desafios",
-      price: "Preço",
-      unlimited: "Ilimitado",
-      free: "Grátis",
-      perMonthShort: "R$ {price}/mês",
-    },
+      "Compete com amigos ou participe de desafios da comunidade. Mantenha-se comprometido e torne economizar dinheiro uma experiência social!",
   },
 }

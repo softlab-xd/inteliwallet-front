@@ -2,9 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, Flame, Crown } from "lucide-react"
+import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { SpendingDashboard } from "@/components/spending-dashboard"
 import { TransactionsList } from "@/components/transactions-list"
 import { GoalsTracker } from "@/components/goals-tracker"
@@ -16,17 +26,11 @@ import { LanguageSelector } from "@/components/language-selector"
 import { AvailableChallenges } from "@/components/available-challenges"
 import { MyChallenges } from "@/components/my-challenges"
 import { CreateChallengeForm } from "@/components/create-challenge-form"
-import { StreaksDisplay } from "@/components/streaks-display"
-import { PlanSelector } from "@/components/plan-selector"
-import { PaymentModal } from "@/components/payment-modal"
-import { UpgradeModal } from "@/components/upgrade-modal"
-import { PlanBadge } from "@/components/plan-badge"
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService, authService } from "@/lib/services"
-import type { Payment } from "@/lib/types/subscription"
 
-type View = "dashboard" | "transactions" | "goals" | "achievements" | "challenges" | "streaks" | "subscription" | "profile"
+type View = "dashboard" | "transactions" | "goals" | "achievements" | "challenges" | "profile"
 
 export function DashboardView() {
   const router = useRouter()
@@ -36,10 +40,9 @@ export function DashboardView() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCreateChallenge, setShowCreateChallenge] = useState(false)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [paymentData, setPaymentData] = useState<Payment | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleViewChange = (view: View) => {
     setCurrentView(view)
@@ -59,7 +62,11 @@ export function DashboardView() {
     }
   }, [user])
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const handleLogoutConfirm = async () => {
     try {
       await authService.logout()
       router.push("/login")
@@ -88,14 +95,7 @@ export function DashboardView() {
               <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-foreground truncate">{t.dashboard.title}</h1>
-                {user ? (
-                  <PlanBadge plan={user.plan} />
-                ) : (
-                  <div className="h-5 w-12 bg-muted/50 animate-pulse rounded" />
-                )}
-              </div>
+              <h1 className="text-base sm:text-lg font-bold text-foreground truncate">{t.dashboard.title}</h1>
               <p className="text-xs text-muted-foreground truncate hidden sm:block">{t.dashboard.subtitle}</p>
             </div>
           </div>
@@ -109,80 +109,72 @@ export function DashboardView() {
       </header>
 
       <div className="flex flex-1">
-        <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
+        <aside className={`hidden border-r border-border/40 bg-card/50 md:block relative transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute -right-3 top-4 z-50 h-6 w-6 rounded-full border border-border bg-background shadow-sm hover:bg-accent"
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          >
+            {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
           <nav className="space-y-2 p-4">
             <Button
               variant={currentView === "dashboard" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("dashboard")}
             >
-              <TrendingUp className="h-5 w-5" />
-              {t.navigation.dashboard}
+              <TrendingUp className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.dashboard}</span>}
             </Button>
             <Button
               variant={currentView === "transactions" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("transactions")}
             >
-              <Wallet className="h-5 w-5" />
-              {t.navigation.transactions}
+              <Wallet className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.transactions}</span>}
             </Button>
             <Button
               variant={currentView === "goals" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("goals")}
             >
-              <Target className="h-5 w-5" />
-              {t.navigation.goals}
+              <Target className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.goals}</span>}
             </Button>
             <Button
               variant={currentView === "achievements" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("achievements")}
             >
-              <Trophy className="h-5 w-5" />
-              {t.navigation.achievements}
+              <Trophy className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.achievements}</span>}
             </Button>
             <Button
               variant={currentView === "challenges" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("challenges")}
             >
-              <Users className="h-5 w-5" />
-              Challenges
-            </Button>
-            <Button
-              variant={currentView === "streaks" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("streaks")}
-            >
-              <Flame className="h-5 w-5" />
-              Streaks
-            </Button>
-            <Button
-              variant={currentView === "subscription" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("subscription")}
-            >
-              <Crown className="h-5 w-5" />
-              Plans
+              <Users className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.challenges}</span>}
             </Button>
             <Button
               variant={currentView === "profile" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
+              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
               onClick={() => handleViewChange("profile")}
             >
-              <User className="h-5 w-5" />
-              {t.navigation.profile}
+              <User className="h-5 w-5 shrink-0" />
+              {!isSidebarCollapsed && <span className="truncate">{t.navigation.profile}</span>}
             </Button>
             <div className="pt-2 border-t border-border/40">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleLogout}
+                className={`w-full gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+                onClick={handleLogoutClick}
               >
-                <LogOut className="h-5 w-5" />
-                {t.profile.logout}
+                <LogOut className="h-5 w-5 shrink-0" />
+                {!isSidebarCollapsed && <span className="truncate">{t.profile.logout}</span>}
               </Button>
             </div>
           </nav>
@@ -197,16 +189,16 @@ export function DashboardView() {
             {currentView === "challenges" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold">Challenges</h1>
+                  <h1 className="text-3xl font-bold">{t.gamification.challenges}</h1>
                   <Button onClick={() => setShowCreateChallenge(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create Challenge
+                    {t.gamification.createChallenge}
                   </Button>
                 </div>
                 <Tabs defaultValue="available" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="available">Available</TabsTrigger>
-                    <TabsTrigger value="my">My Challenges</TabsTrigger>
+                    <TabsTrigger value="available">{t.gamification.available}</TabsTrigger>
+                    <TabsTrigger value="my">{t.gamification.myChallenges}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="available">
                     <AvailableChallenges key={refreshTrigger} />
@@ -216,16 +208,6 @@ export function DashboardView() {
                   </TabsContent>
                 </Tabs>
               </div>
-            )}
-            {currentView === "streaks" && <StreaksDisplay key={refreshTrigger} />}
-            {currentView === "subscription" && (
-              <PlanSelector
-                currentPlan={user?.plan || 'free'}
-                onPlanSelected={(payment) => {
-                  setPaymentData(payment)
-                  setShowPaymentModal(true)
-                }}
-              />
             )}
             {currentView === "profile" && <UserProfile />}
           </div>
@@ -250,24 +232,6 @@ export function DashboardView() {
         open={showCreateChallenge}
         onOpenChange={setShowCreateChallenge}
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
-      />
-
-      <PaymentModal
-        open={showPaymentModal}
-        onOpenChange={setShowPaymentModal}
-        paymentData={paymentData}
-        onPaymentSuccess={async () => {
-          await refreshUser()
-          setRefreshTrigger(prev => prev + 1)
-          setShowPaymentModal(false)
-        }}
-      />
-
-      <UpgradeModal
-        open={showUpgradeModal}
-        onOpenChange={setShowUpgradeModal}
-        currentPlan={user?.plan || 'free'}
-        onUpgradeClick={() => handleViewChange('subscription')}
       />
 
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
@@ -321,13 +285,33 @@ export function DashboardView() {
             variant="ghost"
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1 text-destructive hover:text-destructive"
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
           >
             <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.profile.logout}</span>
           </Button>
         </div>
       </nav>
+
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.profile.logout}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.profile.logoutConfirm}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogoutConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t.profile.logout}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
     </div>

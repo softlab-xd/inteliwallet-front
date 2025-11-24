@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/services/api-client'
 export interface Achievement {
   id: string
   title: string
+  name: string
   description: string
   icon: string
   points: number
@@ -15,6 +16,7 @@ export interface Achievement {
   unlocked: boolean
   unlockedAt?: string
   createdAt: string
+  rarity: "common" | "rare" | "epic" | "legendary"
 }
 
 export const achievementKeys = {
