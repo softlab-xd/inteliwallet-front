@@ -89,7 +89,6 @@
   }
 }
 
-/* Custom scrollbar for futuristic look */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -108,7 +107,6 @@
   background: oklch(0.55 0.22 310);
 }
 
-/* 3D Flip Animation */
 @layer utilities {
   .perspective-\[2000px\] {
     perspective: 2000px;

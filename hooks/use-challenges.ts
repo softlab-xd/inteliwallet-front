@@ -7,6 +7,7 @@ export interface Challenge {
     id: string
     username: string
     avatar: string
+    reward: number
   }
   title: string
   description: string
@@ -61,7 +62,7 @@ export function useActiveChallenges() {
       const data = await apiClient.get<Challenge[]>('/challenges/active')
       return data
     },
-    staleTime: 1000 * 60 * 1, // 1 minuto
+    staleTime: 1000 * 60 * 1,
   })
 }
 

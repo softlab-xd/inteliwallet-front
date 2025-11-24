@@ -15,6 +15,7 @@ export interface Achievement {
   unlocked: boolean
   unlockedAt?: string
   createdAt: string
+  rarity: "common" | "rare" | "epic" | "legendary"
 }
 
 export const achievementKeys = {
