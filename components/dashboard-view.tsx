@@ -5,16 +5,6 @@ import { useRouter } from "next/navigation"
 import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { SpendingDashboard } from "@/components/spending-dashboard"
 import { TransactionsList } from "@/components/transactions-list"
 import { GoalsTracker } from "@/components/goals-tracker"
@@ -29,6 +19,7 @@ import { CreateChallengeForm } from "@/components/create-challenge-form"
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService, authService } from "@/lib/services"
+import type { Payment } from "@/lib/types/subscription"
 
 type View = "dashboard" | "transactions" | "goals" | "achievements" | "challenges" | "profile"
 
@@ -40,9 +31,10 @@ export function DashboardView() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCreateChallenge, setShowCreateChallenge] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [paymentData, setPaymentData] = useState<Payment | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleViewChange = (view: View) => {
     setCurrentView(view)
@@ -62,11 +54,7 @@ export function DashboardView() {
     }
   }, [user])
 
-  const handleLogoutClick = () => {
-    setShowLogoutConfirm(true)
-  }
-
-  const handleLogoutConfirm = async () => {
+  const handleLogout = async () => {
     try {
       await authService.logout()
       router.push("/login")
@@ -75,7 +63,6 @@ export function DashboardView() {
       router.push("/login")
     }
   }
-
   const handleCompleteOnboarding = async () => {
     try {
       await userService.updateProfile({ hasCompletedOnboarding: true } as any)
@@ -85,7 +72,6 @@ export function DashboardView() {
       setShowOnboarding(false)
     }
   }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -107,74 +93,81 @@ export function DashboardView() {
           </div>
         </div>
       </header>
-
       <div className="flex flex-1">
-        <aside className={`hidden border-r border-border/40 bg-card/50 md:block relative transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-3 top-4 z-50 h-6 w-6 rounded-full border border-border bg-background shadow-sm hover:bg-accent"
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          >
-            {isSidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+        <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
           <nav className="space-y-2 p-4">
             <Button
               variant={currentView === "dashboard" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("dashboard")}
             >
-              <TrendingUp className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.dashboard}</span>}
+              <TrendingUp className="h-5 w-5" />
+              {t.navigation.dashboard}
             </Button>
             <Button
               variant={currentView === "transactions" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("transactions")}
             >
-              <Wallet className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.transactions}</span>}
+              <Wallet className="h-5 w-5" />
+              {t.navigation.transactions}
             </Button>
             <Button
               variant={currentView === "goals" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("goals")}
             >
-              <Target className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.goals}</span>}
+              <Target className="h-5 w-5" />
+              {t.navigation.goals}
             </Button>
             <Button
               variant={currentView === "achievements" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("achievements")}
             >
-              <Trophy className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.achievements}</span>}
+              <Trophy className="h-5 w-5" />
+              {t.navigation.achievements}
             </Button>
             <Button
               variant={currentView === "challenges" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("challenges")}
             >
-              <Users className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.challenges}</span>}
+              <Users className="h-5 w-5" />
+              Challenges
+            </Button>
+            <Button
+              variant={currentView === "streaks" ? "default" : "ghost"}
+              className="w-full justify-start gap-3"
+              onClick={() => handleViewChange("streaks")}
+            >
+              <Flame className="h-5 w-5" />
+              Streaks
+            </Button>
+            <Button
+              variant={currentView === "subscription" ? "default" : "ghost"}
+              className="w-full justify-start gap-3"
+              onClick={() => handleViewChange("subscription")}
+            >
+              <Crown className="h-5 w-5" />
+              Plans
             </Button>
             <Button
               variant={currentView === "profile" ? "default" : "ghost"}
-              className={`w-full gap-3 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
+              className="w-full justify-start gap-3"
               onClick={() => handleViewChange("profile")}
             >
-              <User className="h-5 w-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="truncate">{t.navigation.profile}</span>}
+              <User className="h-5 w-5" />
+              {t.navigation.profile}
             </Button>
             <div className="pt-2 border-t border-border/40">
               <Button
                 variant="ghost"
-                className={`w-full gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 ${isSidebarCollapsed ? 'justify-center px-2' : 'justify-start'}`}
-                onClick={handleLogoutClick}
+                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={handleLogout}
               >
-                <LogOut className="h-5 w-5 shrink-0" />
-                {!isSidebarCollapsed && <span className="truncate">{t.profile.logout}</span>}
+                <LogOut className="h-5 w-5" />
+                {t.profile.logout}
               </Button>
             </div>
           </nav>
@@ -189,16 +182,16 @@ export function DashboardView() {
             {currentView === "challenges" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold">{t.gamification.challenges}</h1>
+                  <h1 className="text-3xl font-bold">Challenges</h1>
                   <Button onClick={() => setShowCreateChallenge(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    {t.gamification.createChallenge}
+                    Create Challenge
                   </Button>
                 </div>
                 <Tabs defaultValue="available" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="available">{t.gamification.available}</TabsTrigger>
-                    <TabsTrigger value="my">{t.gamification.myChallenges}</TabsTrigger>
+                    <TabsTrigger value="available">Available</TabsTrigger>
+                    <TabsTrigger value="my">My Challenges</TabsTrigger>
                   </TabsList>
                   <TabsContent value="available">
                     <AvailableChallenges key={refreshTrigger} />
@@ -213,25 +206,45 @@ export function DashboardView() {
           </div>
         </main>
       </div>
-
-      <Button
-        size="icon"
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40"
-        onClick={() => setShowAddDialog(true)}
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
-
+  <Button
+  size="icon"
+  className="cursor-pointer fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40
+             group overflow-hidden outline-none ring-0 focus:ring-0
+             hover:shadow-[0_0_20px_rgba(168,85,247,0.8)] transition-all duration-300"
+  onClick={() => setShowAddDialog(true)}
+>
+  <Plus
+    className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90
+               drop-shadow-[0_0_5px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,1)]"
+  />
+</Button>
       <AddTransactionDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
         onSuccess={handleTransactionChange}
       />
-
       <CreateChallengeForm
         open={showCreateChallenge}
         onOpenChange={setShowCreateChallenge}
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
+      />
+
+      <PaymentModal
+        open={showPaymentModal}
+        onOpenChange={setShowPaymentModal}
+        paymentData={paymentData}
+        onPaymentSuccess={async () => {
+          await refreshUser()
+          setRefreshTrigger(prev => prev + 1)
+          setShowPaymentModal(false)
+        }}
+      />
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        currentPlan={user?.plan || 'free'}
+        onUpgradeClick={() => handleViewChange('subscription')}
       />
 
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
@@ -292,26 +305,6 @@ export function DashboardView() {
           </Button>
         </div>
       </nav>
-
-      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t.profile.logout}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t.profile.logoutConfirm}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogoutConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t.profile.logout}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
     </div>
