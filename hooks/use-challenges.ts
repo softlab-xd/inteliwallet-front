@@ -19,7 +19,10 @@ export interface Challenge {
   maxParticipants: number
   currentParticipants: number
   rewardPoints: number
+  reward: number
   progressPercentage: number
+  progress: number
+  target: number
   topContributors: Array<{
     id: string
     userId: string

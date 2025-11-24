@@ -13,7 +13,7 @@ export const queryClient = new QueryClient({
 
       retry: 1,
 
-      placeholderData: (previousData) => previousData as any,
+      placeholderData: (previousData: unknown) => previousData as any,
     },
   },
 })

@@ -292,13 +292,21 @@ export function UserProfile() {
             )}
           </form>
 
-          {/* Pending Invites */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-foreground">{t.profile.pendingInvites}</h3>
               <Badge variant="secondary" className="text-xs">
                 {friendInvites.length} pending
               </Badge>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/40 text-xs text-blue-600 dark:text-blue-400">
+              <p className="font-medium mb-1">ℹ️ {t.profile.friendInviteInfo.title}</p>
+              <ul className="space-y-1 list-disc list-inside text-muted-foreground">
+                <li>{t.profile.friendInviteInfo.sentInvites}</li>
+                <li>{t.profile.friendInviteInfo.receivedInvites}</li>
+                <li>{t.profile.friendInviteInfo.refreshInfo}</li>
+              </ul>
             </div>
 
             {friendInvites.length === 0 ? (

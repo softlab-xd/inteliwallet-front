@@ -1,5 +1,3 @@
-// Challenge Types
-
 export interface Contributor {
   id: string;
   userId: string;
@@ -27,7 +25,10 @@ export interface Challenge {
   maxParticipants: number;
   currentParticipants: number;
   rewardPoints: number;
+  reward: number;
   progressPercentage: number;
+  progress: number;
+  target: number;
   topContributors: Contributor[];
   createdAt: string;
   updatedAt: string;

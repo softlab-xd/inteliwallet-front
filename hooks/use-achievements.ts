@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/services/api-client'
 export interface Achievement {
   id: string
   title: string
+  name: string
   description: string
   icon: string
   points: number

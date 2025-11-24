@@ -13,6 +13,10 @@ export interface Translations {
     close: string
     confirm: string
     back: string
+    skip: string
+    next: string
+    finish: string
+    error: string
   }
   months: {
     jan: string
@@ -43,6 +47,7 @@ export interface Translations {
     goals: string
     achievements: string
     profile: string
+    challenges: string
   }
   auth: {
     login: string
@@ -107,6 +112,16 @@ export interface Translations {
     accept: string
     decline: string
     logout: string
+    logoutConfirm: {
+      title: string
+      description: string
+    }
+    friendInviteInfo: {
+      title: string
+      sentInvites: string
+      receivedInvites: string
+      refreshInfo: string
+    }
   }
   dashboard: {
     title: string
@@ -203,6 +218,14 @@ export interface Translations {
     createGoal: string
     goalTitlePlaceholder: string
     categoryPlaceholder: string
+    goalCreated: string
+    goalCreatedDesc: string
+    goalCreationFailed: string
+  }
+  challenges: {
+    createChallenge: string
+    available: string
+    myChallenges: string
   }
   gamification: {
     level: string
@@ -230,5 +253,17 @@ export interface Translations {
       epic: string
       legendary: string
     }
+  }
+  onboarding: {
+    step1Title: string
+    step1Description: string
+    step2Title: string
+    step2Description: string
+    step3Title: string
+    step3Description: string
+    step4Title: string
+    step4Description: string
+    step5Title: string
+    step5Description: string
   }
 }

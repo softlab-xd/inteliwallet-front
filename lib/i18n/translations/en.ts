@@ -16,6 +16,7 @@ export const en: Translations = {
     skip: "Skip",
     next: "Next",
     finish: "Get Started",
+    error: "Error",
   },
   months: {
     jan: "Jan",
@@ -46,6 +47,7 @@ export const en: Translations = {
     goals: "Goals",
     achievements: "Achievements",
     profile: "Profile",
+    challenges: "Challenges",
   },
   auth: {
     login: "Login",
@@ -110,6 +112,16 @@ export const en: Translations = {
     accept: "Accept",
     decline: "Decline",
     logout: "Logout",
+    logoutConfirm: {
+      title: "Confirm Logout",
+      description: "Are you sure you want to log out? You'll need to sign in again to access your account.",
+    },
+    friendInviteInfo: {
+      title: "How friend invites work:",
+      sentInvites: "Invites you send won't appear here",
+      receivedInvites: "Only invites you receive from others are shown",
+      refreshInfo: "Click \"Refresh\" above to check for new invites",
+    },
   },
   dashboard: {
     title: "SmartWallet",
@@ -206,6 +218,14 @@ export const en: Translations = {
     createGoal: "Create Goal",
     goalTitlePlaceholder: "e.g., Emergency Fund",
     categoryPlaceholder: "e.g., Savings, Travel, Technology",
+    goalCreated: "Goal Created",
+    goalCreatedDesc: "Your goal has been successfully created",
+    goalCreationFailed: "Failed to create goal",
+  },
+  challenges: {
+    createChallenge: "Create Challenge",
+    available: "Available",
+    myChallenges: "My Challenges",
   },
   gamification: {
     level: "Level",
@@ -235,15 +255,15 @@ export const en: Translations = {
     },
   },
   onboarding: {
-    step1Title: "Welcome to InteliWallet!",
-    step1Description: "Your gamified financial wallet. Turn financial management into something fun and engaging.",
-    step2Title: "Add Transactions",
-    step2Description: "Click the + button to record your income and expenses. Categorize and track where your money is going.",
-    step3Title: "Set Goals",
-    step3Description: "Create savings goals and track your progress. Whether it's an emergency fund or that dream vacation!",
-    step4Title: "Earn Achievements",
-    step4Description: "Complete challenges, unlock achievements and level up. The more you manage, the more rewards you earn!",
-    step5Title: "You're ready!",
-    step5Description: "Start transforming your finances now. Track spending, reach goals and have fun along the way!",
+    step1Title: "Welcome to InteliWallet",
+    step1Description: "Your gamified financial control center. Track your money, set goals, and make finance management fun and rewarding.",
+    step2Title: "Track Your Finances",
+    step2Description: "View your dashboard to see income, expenses, and spending patterns. All your financial data in one place with beautiful charts.",
+    step3Title: "Set Financial Goals",
+    step3Description: "Create savings goals and track progress. Whether it's an emergency fund, vacation, or new gadget - stay motivated!",
+    step4Title: "Unlock Achievements",
+    step4Description: "Complete challenges, earn points, and level up. Turn financial responsibility into an engaging game with real rewards.",
+    step5Title: "Join Challenges",
+    step5Description: "Compete with friends or join community challenges. Stay accountable and make saving money a social experience!",
   },
 }
