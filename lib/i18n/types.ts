@@ -112,7 +112,16 @@ export interface Translations {
     accept: string
     decline: string
     logout: string
-    logoutConfirm: string
+    logoutConfirm: {
+      title: string
+      description: string
+    }
+    friendInviteInfo: {
+      title: string
+      sentInvites: string
+      receivedInvites: string
+      refreshInfo: string
+    }
   }
   dashboard: {
     title: string
@@ -213,6 +222,11 @@ export interface Translations {
     goalCreatedDesc: string
     goalCreationFailed: string
   }
+  challenges: {
+    createChallenge: string
+    available: string
+    myChallenges: string
+  }
   gamification: {
     level: string
     financialChampion: string
@@ -233,9 +247,6 @@ export interface Translations {
     topSavers: string
     you: string
     points: string
-    createChallenge: string
-    available: string
-    myChallenges: string
     rarities: {
       common: string
       rare: string

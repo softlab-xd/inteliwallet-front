@@ -339,11 +339,11 @@ export function UserProfile() {
             </div>
 
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/40 text-xs text-blue-600 dark:text-blue-400">
-              <p className="font-medium mb-1">ℹ️ How friend invites work:</p>
+              <p className="font-medium mb-1">ℹ️ {t.profile.friendInviteInfo.title}</p>
               <ul className="space-y-1 list-disc list-inside text-muted-foreground">
-                <li>Invites you <strong>send</strong> won't appear here</li>
-                <li>Only invites you <strong>receive</strong> from others are shown</li>
-                <li>Click "Refresh" above to check for new invites</li>
+                <li>{t.profile.friendInviteInfo.sentInvites}</li>
+                <li>{t.profile.friendInviteInfo.receivedInvites}</li>
+                <li>{t.profile.friendInviteInfo.refreshInfo}</li>
               </ul>
             </div>
 

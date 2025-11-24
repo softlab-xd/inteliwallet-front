@@ -112,7 +112,16 @@ export const en: Translations = {
     accept: "Accept",
     decline: "Decline",
     logout: "Logout",
-    logoutConfirm: "Are you sure you want to logout?",
+    logoutConfirm: {
+      title: "Confirm Logout",
+      description: "Are you sure you want to log out? You'll need to sign in again to access your account.",
+    },
+    friendInviteInfo: {
+      title: "How friend invites work:",
+      sentInvites: "Invites you send won't appear here",
+      receivedInvites: "Only invites you receive from others are shown",
+      refreshInfo: "Click \"Refresh\" above to check for new invites",
+    },
   },
   dashboard: {
     title: "SmartWallet",
@@ -213,6 +222,11 @@ export const en: Translations = {
     goalCreatedDesc: "Your goal has been successfully created",
     goalCreationFailed: "Failed to create goal",
   },
+  challenges: {
+    createChallenge: "Create Challenge",
+    available: "Available",
+    myChallenges: "My Challenges",
+  },
   gamification: {
     level: "Level",
     financialChampion: "Financial Champion",
@@ -233,9 +247,6 @@ export const en: Translations = {
     topSavers: "Top savers this month",
     you: "You",
     points: "points",
-    createChallenge: "Create Challenge",
-    available: "Available",
-    myChallenges: "My Challenges",
     rarities: {
       common: "Common",
       rare: "Rare",

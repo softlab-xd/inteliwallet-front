@@ -115,7 +115,16 @@ export const pt: Translations = {
     accept: "Aceitar",
     decline: "Recusar",
     logout: "Sair",
-    logoutConfirm: "Tem certeza que deseja sair da sua conta?",
+    logoutConfirm: {
+      title: "Confirmar Saída",
+      description: "Tem certeza que deseja sair? Você precisará entrar novamente para acessar sua conta.",
+    },
+    friendInviteInfo: {
+      title: "Como funcionam os convites de amigos:",
+      sentInvites: "Convites que você envia não aparecerão aqui",
+      receivedInvites: "Apenas convites que você recebe de outros são mostrados",
+      refreshInfo: "Clique em \"Atualizar\" acima para verificar novos convites",
+    },
   },
   dashboard: {
     title: "SmartWallet",
@@ -221,6 +230,11 @@ export const pt: Translations = {
     goalCreatedDesc: "Sua meta foi criada com sucesso",
     goalCreationFailed: "Falha ao criar meta",
   },
+  challenges: {
+    createChallenge: "Criar Desafio",
+    available: "Disponíveis",
+    myChallenges: "Meus Desafios",
+  },
   gamification: {
     level: "Nível",
     financialChampion: "Campeão Financeiro",
@@ -242,9 +256,6 @@ export const pt: Translations = {
     topSavers: "Maiores poupadores este mês",
     you: "Você",
     points: "pontos",
-    createChallenge: "Criar Desafio",
-    available: "Disponíveis",
-    myChallenges: "Meus Desafios",
     rarities: {
       common: "Comum",
       rare: "Raro",

@@ -3,8 +3,19 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, ChevronLeft, ChevronRight } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { SpendingDashboard } from "@/components/spending-dashboard"
 import { TransactionsList } from "@/components/transactions-list"
 import { GoalsTracker } from "@/components/goals-tracker"
@@ -19,21 +30,19 @@ import { CreateChallengeForm } from "@/components/create-challenge-form"
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService, authService } from "@/lib/services"
-import type { Payment } from "@/lib/types/subscription"
 
 type View = "dashboard" | "transactions" | "goals" | "achievements" | "challenges" | "profile"
 
 export function DashboardView() {
   const router = useRouter()
   const { t } = useLanguage()
-  const { user, refreshUser } = useUser()
+  const { user } = useUser()
   const [currentView, setCurrentView] = useState<View>("dashboard")
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCreateChallenge, setShowCreateChallenge] = useState(false)
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [paymentData, setPaymentData] = useState<Payment | null>(null)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleViewChange = (view: View) => {
@@ -54,15 +63,6 @@ export function DashboardView() {
     }
   }, [user])
 
-  const handleLogout = async () => {
-    try {
-      await authService.logout()
-      router.push("/login")
-    } catch (error) {
-      console.error("Error logging out:", error)
-      router.push("/login")
-    }
-  }
   const handleCompleteOnboarding = async () => {
     try {
       await userService.updateProfile({ hasCompletedOnboarding: true } as any)
@@ -94,86 +94,92 @@ export function DashboardView() {
         </div>
       </header>
       <div className="flex flex-1">
-        <aside className="hidden w-64 border-r border-border/40 bg-card/50 md:block">
-          <nav className="space-y-2 p-4">
-            <Button
-              variant={currentView === "dashboard" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("dashboard")}
-            >
-              <TrendingUp className="h-5 w-5" />
-              {t.navigation.dashboard}
-            </Button>
-            <Button
-              variant={currentView === "transactions" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("transactions")}
-            >
-              <Wallet className="h-5 w-5" />
-              {t.navigation.transactions}
-            </Button>
-            <Button
-              variant={currentView === "goals" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("goals")}
-            >
-              <Target className="h-5 w-5" />
-              {t.navigation.goals}
-            </Button>
-            <Button
-              variant={currentView === "achievements" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("achievements")}
-            >
-              <Trophy className="h-5 w-5" />
-              {t.navigation.achievements}
-            </Button>
-            <Button
-              variant={currentView === "challenges" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("challenges")}
-            >
-              <Users className="h-5 w-5" />
-              Challenges
-            </Button>
-            <Button
-              variant={currentView === "streaks" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("streaks")}
-            >
-              <Flame className="h-5 w-5" />
-              Streaks
-            </Button>
-            <Button
-              variant={currentView === "subscription" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("subscription")}
-            >
-              <Crown className="h-5 w-5" />
-              Plans
-            </Button>
-            <Button
-              variant={currentView === "profile" ? "default" : "ghost"}
-              className="w-full justify-start gap-3"
-              onClick={() => handleViewChange("profile")}
-            >
-              <User className="h-5 w-5" />
-              {t.navigation.profile}
-            </Button>
-            <div className="pt-2 border-t border-border/40">
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-5 w-5" />
-                {t.profile.logout}
-              </Button>
-            </div>
-          </nav>
-        </aside>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="hidden md:flex fixed left-0 top-20 z-50 transition-all duration-300 hover:bg-transparent"
+          style={{ left: isSidebarOpen ? '240px' : '0px' }}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          {isSidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+        </Button>
 
-        <main className="flex-1 overflow-auto">
+        <AnimatePresence initial={false}>
+          {isSidebarOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 256, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="hidden border-r border-border/40 bg-card/50 md:block overflow-hidden fixed left-0 top-16 h-[calc(100vh-4rem)] z-40"
+            >
+              <div className="relative h-full">
+                <nav className="space-y-2 p-4 w-64 h-full">
+                  <Button
+                    variant={currentView === "dashboard" ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleViewChange("dashboard")}
+                  >
+                    <TrendingUp className="h-5 w-5" />
+                    {t.navigation.dashboard}
+                  </Button>
+                <Button
+                  variant={currentView === "transactions" ? "default" : "ghost"}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleViewChange("transactions")}
+                >
+                  <Wallet className="h-5 w-5" />
+                  {t.navigation.transactions}
+                </Button>
+                <Button
+                  variant={currentView === "goals" ? "default" : "ghost"}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleViewChange("goals")}
+                >
+                  <Target className="h-5 w-5" />
+                  {t.navigation.goals}
+                </Button>
+                <Button
+                  variant={currentView === "achievements" ? "default" : "ghost"}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleViewChange("achievements")}
+                >
+                  <Trophy className="h-5 w-5" />
+                  {t.navigation.achievements}
+                </Button>
+                <Button
+                  variant={currentView === "challenges" ? "default" : "ghost"}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleViewChange("challenges")}
+                >
+                  <Users className="h-5 w-5" />
+                  {t.navigation.challenges}
+                </Button>
+                <Button
+                  variant={currentView === "profile" ? "default" : "ghost"}
+                  className="w-full justify-start gap-3"
+                  onClick={() => handleViewChange("profile")}
+                >
+                  <User className="h-5 w-5" />
+                  {t.navigation.profile}
+                </Button>
+                <div className="pt-2 border-t border-border/40">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setShowLogoutConfirm(true)}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    {t.profile.logout}
+                  </Button>
+                </div>
+              </nav>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        <main className={`flex-1 overflow-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
           <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
             {currentView === "dashboard" && <SpendingDashboard refreshTrigger={refreshTrigger} />}
             {currentView === "transactions" && <TransactionsList onTransactionChange={handleTransactionChange} />}
@@ -182,16 +188,16 @@ export function DashboardView() {
             {currentView === "challenges" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold">Challenges</h1>
+                  <h1 className="text-3xl font-bold">{t.navigation.challenges}</h1>
                   <Button onClick={() => setShowCreateChallenge(true)}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create Challenge
+                    {t.challenges?.createChallenge || "Create Challenge"}
                   </Button>
                 </div>
                 <Tabs defaultValue="available" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="available">Available</TabsTrigger>
-                    <TabsTrigger value="my">My Challenges</TabsTrigger>
+                    <TabsTrigger value="available">{t.challenges?.available || "Available"}</TabsTrigger>
+                    <TabsTrigger value="my">{t.challenges?.myChallenges || "My Challenges"}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="available">
                     <AvailableChallenges key={refreshTrigger} />
@@ -227,24 +233,6 @@ export function DashboardView() {
         open={showCreateChallenge}
         onOpenChange={setShowCreateChallenge}
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
-      />
-
-      <PaymentModal
-        open={showPaymentModal}
-        onOpenChange={setShowPaymentModal}
-        paymentData={paymentData}
-        onPaymentSuccess={async () => {
-          await refreshUser()
-          setRefreshTrigger(prev => prev + 1)
-          setShowPaymentModal(false)
-        }}
-      />
-
-      <UpgradeModal
-        open={showUpgradeModal}
-        onOpenChange={setShowUpgradeModal}
-        currentPlan={user?.plan || 'free'}
-        onUpgradeClick={() => handleViewChange('subscription')}
       />
 
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
@@ -298,7 +286,7 @@ export function DashboardView() {
             variant="ghost"
             size="sm"
             className="flex-col gap-0.5 h-auto py-2 px-1 flex-1 text-destructive hover:text-destructive"
-            onClick={handleLogoutClick}
+            onClick={() => setShowLogoutConfirm(true)}
           >
             <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.profile.logout}</span>
@@ -307,6 +295,34 @@ export function DashboardView() {
       </nav>
 
       <Onboarding open={showOnboarding} onComplete={handleCompleteOnboarding} />
+
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.profile?.logoutConfirm?.title || "Confirm Logout"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.profile?.logoutConfirm?.description || "Are you sure you want to log out? You'll need to sign in again to access your account."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.common?.cancel || "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                try {
+                  await authService.logout()
+                  router.push("/login")
+                } catch (error) {
+                  console.error("Error logging out:", error)
+                  router.push("/login")
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t.profile?.logout || "Logout"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
