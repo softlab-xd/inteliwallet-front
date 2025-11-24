@@ -72,9 +72,10 @@ export function DashboardView() {
       setShowOnboarding(false)
     }
   }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 h-16 transition-all">
         <div className="flex h-16 items-center justify-between px-4 max-w-full">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-primary shrink-0">
@@ -87,9 +88,7 @@ export function DashboardView() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <LanguageSelector />
-            <Button size="icon" variant="ghost" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+          
           </div>
         </div>
       </header>
@@ -212,18 +211,20 @@ export function DashboardView() {
           </div>
         </main>
       </div>
-  <Button
-  size="icon"
-  className="cursor-pointer fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40
-             group overflow-hidden outline-none ring-0 focus:ring-0
-             hover:shadow-[0_0_20px_rgba(168,85,247,0.8)] transition-all duration-300"
-  onClick={() => setShowAddDialog(true)}
->
-  <Plus
-    className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90
-               drop-shadow-[0_0_5px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,1)]"
-  />
-</Button>
+
+      <Button
+        size="icon"
+        className="cursor-pointer fixed bottom-20 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg shadow-primary/50 z-40
+                  group overflow-hidden outline-none ring-0 focus:ring-0
+                  hover:shadow-[0_0_20px_rgba(168,85,247,0.8)] transition-all duration-300"
+        onClick={() => setShowAddDialog(true)}
+      >
+        <Plus
+          className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90
+                    drop-shadow-[0_0_5px_rgba(255,255,255,0.7)] group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,1)]"
+        />
+      </Button>
+
       <AddTransactionDialog
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
@@ -238,48 +239,68 @@ export function DashboardView() {
       <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around p-2 gap-1">
           <Button
-            variant={currentView === "dashboard" ? "default" : "ghost"}
+            variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+              currentView === "dashboard" 
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
+                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+            }`}
             onClick={() => handleViewChange("dashboard")}
           >
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+            <TrendingUp className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "dashboard" ? "text-yellow-300" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.dashboard}</span>
           </Button>
           <Button
-            variant={currentView === "transactions" ? "default" : "ghost"}
+            variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+              currentView === "transactions" 
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
+                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+            }`}
             onClick={() => handleViewChange("transactions")}
           >
-            <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Wallet className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "transactions" ? "text-yellow-300" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.transactions}</span>
           </Button>
           <Button
-            variant={currentView === "goals" ? "default" : "ghost"}
+            variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+              currentView === "goals" 
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
+                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+            }`}
             onClick={() => handleViewChange("goals")}
           >
-            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Target className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "goals" ? "text-yellow-300" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.goals}</span>
           </Button>
           <Button
-            variant={currentView === "achievements" ? "default" : "ghost"}
+            variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+              currentView === "achievements" 
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
+                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+            }`}
             onClick={() => handleViewChange("achievements")}
           >
-            <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Trophy className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "achievements" ? "text-yellow-300" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.achievements}</span>
           </Button>
           <Button
-            variant={currentView === "profile" ? "default" : "ghost"}
+            variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1"
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+              currentView === "profile" 
+                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
+                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+            }`}
             onClick={() => handleViewChange("profile")}
           >
-            <User className="h-4 w-4 sm:h-5 sm:w-5" />
+            <User className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "profile" ? "text-yellow-300" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.profile}</span>
           </Button>
           <Button

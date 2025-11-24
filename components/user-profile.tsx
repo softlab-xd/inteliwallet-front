@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useLanguage } from "@/lib/i18n"
 import { useUser } from "@/lib/context/user-context"
 import { userService } from "@/lib/services"
-import { User, Trash2, UserPlus, X, Check, Crown, Lock, Smile, RefreshCw } from "lucide-react"
-import { EmojiPickerModal } from "@/components/emoji-picker-modal"
+import { User, Trash2, UserPlus, X, Check, Crown, Lock, RefreshCw } from "lucide-react"
+import { ProfileCustomizationPanel } from "@/components/profile-customization-panel"
 
 export function UserProfile() {
   const { t } = useLanguage()
@@ -19,9 +19,8 @@ export function UserProfile() {
 
   const [username, setUsername] = useState(user?.username || "")
   const [email, setEmail] = useState(user?.email || "")
-  const [avatar, setAvatar] = useState(user?.avatar || "😀")
+  const [avatar, setAvatar] = useState(user?.avatar || "😀") 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [friendUsername, setFriendUsername] = useState("")
   const [addFriendError, setAddFriendError] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -46,10 +45,6 @@ export function UserProfile() {
   const handleUpdateProfile = (e: React.FormEvent) => {
     e.preventDefault()
     updateUser({ username, email, avatar })
-  }
-
-  const handleEmojiSelect = (emoji: string) => {
-    setAvatar(emoji)
   }
 
   const handleDeleteAccount = () => {
@@ -127,20 +122,13 @@ export function UserProfile() {
 
   const sortedFriends = [...friends].sort((a, b) => b.totalPoints - a.totalPoints)
 
-  console.log("👤 User Profile Component - User:", user)
-  console.log("👥 User Profile Component - Friends:", friends, `(${friends.length} friends)`)
-  console.log("📬 User Profile Component - Friend Invites:", friendInvites, `(${friendInvites.length} invites)`)
-
-  if (user && friends.length === 0) {
-    console.warn("⚠️ No friends loaded. Check if backend returned empty array or if there's an error.")
-  }
-
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground">{t.profile.title}</h2>
         <p className="text-sm text-muted-foreground">{t.profile.subtitle}</p>
       </div>
+      <ProfileCustomizationPanel />
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <Card className="border-border/40 bg-card/50 backdrop-blur">
@@ -153,25 +141,7 @@ export function UserProfile() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdateProfile} className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-foreground">Avatar</Label>
-                <div className="flex items-center gap-4">
-                  <div className="text-6xl">{avatar}</div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowEmojiPicker(true)}
-                    className="gap-2"
-                  >
-                    <Smile className="h-4 w-4" />
-                    Change Avatar
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Click to choose a new emoji avatar
-                </p>
-              </div>
-
+              
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-foreground">
                   {t.profile.username}
@@ -210,13 +180,12 @@ export function UserProfile() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full cursor-pointer">
                 {t.profile.updateProfile}
               </Button>
             </form>
           </CardContent>
         </Card>
-
         <Card className="border-border/40 bg-card/50 backdrop-blur">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
@@ -240,12 +209,6 @@ export function UserProfile() {
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <p className="text-sm text-foreground">
-                  {user?.email || 'Loading...'}
-                </p>
-              </div>
-              <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Member Since</Label>
                 <p className="text-sm text-foreground">
                   {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
@@ -262,7 +225,7 @@ export function UserProfile() {
               <p className="text-sm text-muted-foreground">••••••••</p>
               <Button
                 variant="outline"
-                className="w-full bg-transparent"
+                className="w-full bg-transparent cursor-pointer"
                 onClick={() => setShowPasswordDialog(true)}
               >
                 {t.profile.changePassword}
@@ -270,7 +233,7 @@ export function UserProfile() {
             </div>
 
             <div className="pt-4 border-t border-border/40">
-              <Button variant="destructive" className="w-full" onClick={() => setShowDeleteDialog(true)}>
+              <Button variant="destructive" className="w-full cursor-pointer" onClick={() => setShowDeleteDialog(true)}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t.profile.deleteAccount}
               </Button>
@@ -278,7 +241,6 @@ export function UserProfile() {
           </CardContent>
         </Card>
       </div>
-
       <Card className="border-border/40 bg-card/50 backdrop-blur">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -295,7 +257,7 @@ export function UserProfile() {
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="gap-2"
+                className="gap-2 cursor-pointer"
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
@@ -318,7 +280,7 @@ export function UserProfile() {
                 }}
                 className="flex-1 bg-background/50"
               />
-              <Button type="submit">
+              <Button type="submit" className="cursor-pointer">
                 <UserPlus className="h-4 w-4 mr-2" />
                 {t.profile.addFriend}
               </Button>
@@ -350,7 +312,6 @@ export function UserProfile() {
             {friendInvites.length === 0 ? (
               <div className="text-center py-6 text-sm text-muted-foreground border border-border/40 rounded-lg bg-background/30">
                 <p>No pending friend invites</p>
-                <p className="text-xs mt-1">When someone sends you a friend request, it will appear here</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -384,10 +345,10 @@ export function UserProfile() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="default" onClick={() => acceptInvite(invite.id)}>
+                        <Button size="sm" variant="default" onClick={() => acceptInvite(invite.id)} className="cursor-pointer">
                           <Check className="h-4 w-4" />
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => declineInvite(invite.id)}>
+                        <Button size="sm" variant="ghost" onClick={() => declineInvite(invite.id)} className="cursor-pointer">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -397,7 +358,6 @@ export function UserProfile() {
               </div>
             )}
           </div>
-
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-foreground">{t.profile.friendsList}</h3>
             {sortedFriends.length === 0 ? (
@@ -448,7 +408,7 @@ export function UserProfile() {
                       </div>
                       <div className="flex items-center gap-2">
                         {index === 0 && <Crown className="h-5 w-5 text-accent" />}
-                        <Button size="sm" variant="ghost" onClick={() => removeFriend(friend.id)}>
+                        <Button size="sm" variant="ghost" onClick={() => removeFriend(friend.id)} className="cursor-pointer">
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -460,7 +420,6 @@ export function UserProfile() {
           </div>
         </CardContent>
       </Card>
-
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
         <DialogContent className="sm:max-w-[425px] bg-card border-border/40">
           <DialogHeader>
@@ -484,7 +443,6 @@ export function UserProfile() {
                 disabled={passwordLoading}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="newPassword" className="text-foreground">
                 {t.profile.newPassword}
@@ -500,7 +458,6 @@ export function UserProfile() {
                 disabled={passwordLoading}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-foreground">
                 {t.profile.confirmPassword}
@@ -516,13 +473,11 @@ export function UserProfile() {
                 disabled={passwordLoading}
               />
             </div>
-
             {passwordError && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/40 text-destructive text-sm">
                 {passwordError}
               </div>
             )}
-
             <DialogFooter className="flex gap-2">
               <Button
                 type="button"
@@ -536,12 +491,12 @@ export function UserProfile() {
                     confirmPassword: "",
                   })
                 }}
-                className="bg-transparent"
+                className="bg-transparent cursor-pointer"
                 disabled={passwordLoading}
               >
                 {t.common.cancel}
               </Button>
-              <Button type="submit" disabled={passwordLoading}>
+              <Button type="submit" disabled={passwordLoading} className="cursor-pointer">
                 {passwordLoading ? "Salvando..." : t.common.save}
               </Button>
             </DialogFooter>
@@ -556,22 +511,15 @@ export function UserProfile() {
             <DialogDescription className="text-muted-foreground">{t.profile.deleteAccountWarning}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="bg-transparent">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="bg-transparent cursor-pointer">
               {t.common.cancel}
             </Button>
-            <Button variant="destructive" onClick={handleDeleteAccount}>
+            <Button variant="destructive" onClick={handleDeleteAccount} className="cursor-pointer">
               {t.common.confirm}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <EmojiPickerModal
-        open={showEmojiPicker}
-        onOpenChange={setShowEmojiPicker}
-        currentEmoji={avatar}
-        onEmojiSelect={handleEmojiSelect}
-      />
     </div>
   )
 }

@@ -3,12 +3,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Trophy, Star, Zap, Target, TrendingUp, Award, Crown, Flame, Lock, CheckCircle2, Loader2 } from "lucide-react"
 import { useLanguage } from "@/lib/i18n"
 import { useAchievements } from "@/hooks/use-achievements"
 import { useChallenges } from "@/hooks/use-challenges"
 import { useLeaderboard, useFriendsLeaderboard } from "@/hooks/use-leaderboard"
+import { useState } from "react"
+import { motion } from "framer-motion"
 
 const getIconComponent = (iconName: string) => {
   const iconMap: Record<string, typeof Trophy> = {
@@ -33,6 +35,9 @@ const rarityColors = {
 
 export function GamificationPanel() {
   const { t } = useLanguage()
+
+  const [activeTab, setActiveTab] = useState("achievements")
+  const [activeLeaderboardTab, setActiveLeaderboardTab] = useState("global")
 
   const { data: achievements = [], isLoading: achievementsLoading } = useAchievements()
   const { data: challenges = [], isLoading: challengesLoading } = useChallenges()
@@ -134,14 +139,63 @@ export function GamificationPanel() {
         </Card>
       </div>
 
-      <Tabs defaultValue="achievements" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="achievements">{t.gamification.achievements}</TabsTrigger>
-          <TabsTrigger value="challenges">{t.gamification.challenges}</TabsTrigger>
-          <TabsTrigger value="leaderboard">Ranking</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        
+        <div className="relative grid w-full grid-cols-3 p-1 bg-muted/50 rounded-xl mb-6">
+          
+          <button
+            onClick={() => setActiveTab("achievements")}
+            className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus:ring-0"
+          >
+            <span className={`relative z-20 ${activeTab === "achievements" ? "text-white" : "text-muted-foreground"}`}>
+              {t.gamification.achievements}
+            </span>
+            {activeTab === "achievements" && (
+              <motion.div
+                layoutId="gamification-main-tab"
+                className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                initial={false}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
 
-        <TabsContent value="achievements" className="space-y-4 mt-6">
+          <button
+            onClick={() => setActiveTab("challenges")}
+            className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus:ring-0"
+          >
+            <span className={`relative z-20 ${activeTab === "challenges" ? "text-white" : "text-muted-foreground"}`}>
+              {t.gamification.challenges}
+            </span>
+            {activeTab === "challenges" && (
+              <motion.div
+                layoutId="gamification-main-tab"
+                className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                initial={false}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("leaderboard")}
+            className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus:ring-0"
+          >
+            <span className={`relative z-20 ${activeTab === "leaderboard" ? "text-white" : "text-muted-foreground"}`}>
+              Ranking
+            </span>
+            {activeTab === "leaderboard" && (
+              <motion.div
+                layoutId="gamification-main-tab"
+                className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                initial={false}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              />
+            )}
+          </button>
+        </div>
+
+        <TabsContent value="achievements" className="space-y-4 mt-0 outline-none focus:ring-0">
           <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             {achievements.map((achievement) => {
               const Icon = getIconComponent(achievement.icon)
@@ -155,7 +209,7 @@ export function GamificationPanel() {
                 >
                   <div
                     className="absolute top-0 left-0 right-0 h-1"
-                    style={{ backgroundColor: rarityColors[achievement.rarity] }}
+                    style={{ backgroundColor: rarityColors[achievement.rarity as keyof typeof rarityColors] }}
                   />
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
@@ -203,8 +257,7 @@ export function GamificationPanel() {
             })}
           </div>
         </TabsContent>
-
-        <TabsContent value="challenges" className="space-y-4 mt-6">
+        <TabsContent value="challenges" className="space-y-4 mt-0 outline-none focus:ring-0">
           <Card className="border-border/40 bg-card/50 backdrop-blur">
             <CardHeader>
               <CardTitle className="text-foreground">{t.gamification.weeklyChallenges}</CardTitle>
@@ -256,17 +309,45 @@ export function GamificationPanel() {
               })}
             </CardContent>
           </Card>
-
         </TabsContent>
+        <TabsContent value="leaderboard" className="space-y-4 mt-0 outline-none focus:ring-0">
+          <Tabs value={activeLeaderboardTab} onValueChange={setActiveLeaderboardTab} className="w-full">
+            <div className="relative grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl mb-4">
+              <button
+                onClick={() => setActiveLeaderboardTab("global")}
+                className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus:ring-0"
+              >
+                <span className={`relative z-20 ${activeLeaderboardTab === "global" ? "text-white" : "text-muted-foreground"}`}>
+                  Global Ranking
+                </span>
+                {activeLeaderboardTab === "global" && (
+                  <motion.div
+                    layoutId="gamification-leaderboard-tab"
+                    className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveLeaderboardTab("friends")}
+                className="relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-colors cursor-pointer outline-none focus:ring-0"
+              >
+                <span className={`relative z-20 ${activeLeaderboardTab === "friends" ? "text-white" : "text-muted-foreground"}`}>
+                  Friends Ranking
+                </span>
+                {activeLeaderboardTab === "friends" && (
+                  <motion.div
+                    layoutId="gamification-leaderboard-tab"
+                    className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </button>
+            </div>
 
-        <TabsContent value="leaderboard" className="space-y-4 mt-6">
-          <Tabs defaultValue="global" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="global">Global Ranking</TabsTrigger>
-              <TabsTrigger value="friends">Friends Ranking</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="global" className="mt-4">
+            <TabsContent value="global" className="mt-0 outline-none focus:ring-0">
               <Card className="border-border/40 bg-card/50 backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-foreground">{t.gamification.leaderboard}</CardTitle>
@@ -346,7 +427,7 @@ export function GamificationPanel() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="friends" className="mt-4">
+            <TabsContent value="friends" className="mt-0 outline-none focus:ring-0">
               <Card className="border-border/40 bg-card/50 backdrop-blur">
                 <CardHeader>
                   <CardTitle className="text-foreground">Friends Ranking</CardTitle>
