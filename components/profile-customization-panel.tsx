@@ -1,237 +1,254 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { User, Zap, Crown, Star, Flame, Smile, Ghost, Heart, Shield, Check, Save, Loader2 } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { useUser } from "@/lib/context/user-context" 
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useLanguage } from "@/lib/i18n"
+import { useUser } from "@/lib/context/user-context"
+import { userService } from "@/lib/services"
+import { User, Trash2, UserPlus, X, Check, Crown, Lock, RefreshCw, Smile } from "lucide-react"
 
-const AVAILABLE_ICONS = [
-  { id: "default", icon: User, label: "Padrão" },
-  { id: "zap", icon: Zap, label: "Rápido" },
-  { id: "crown", icon: Crown, label: "Rei" },
-  { id: "star", icon: Star, label: "Estrela" },
-  { id: "flame", icon: Flame, label: "Fogo" },
-  { id: "smile", icon: Smile, label: "Feliz" },
-  { id: "ghost", icon: Ghost, label: "Fantasma" },
-  { id: "heart", icon: Heart, label: "Amor" },
-  { id: "shield", icon: Shield, label: "Guardião" },
-]
+export function UserProfile() {
+  const { t } = useLanguage()
+  const { user, friends, friendInvites, updateUser, deleteAccount, addFriend, removeFriend, acceptInvite, declineInvite, refreshUser } = useUser()
 
-const AVAILABLE_BANNERS = [
-  { id: "purple", class: "bg-gradient-to-r from-purple-600 to-indigo-600", label: "Neon Roxo" },
-  { id: "blue", class: "bg-gradient-to-r from-blue-500 to-cyan-500", label: "Oceano" },
-  { id: "orange", class: "bg-gradient-to-r from-orange-500 to-red-500", label: "Pôr do Sol" },
-  { id: "green", class: "bg-gradient-to-r from-emerald-500 to-green-600", label: "Natureza" },
-  { id: "dark", class: "bg-neutral-900 border border-white/10", label: "Meia-noite" },
-  { id: "pink", class: "bg-gradient-to-r from-pink-500 to-rose-500", label: "Doce" },
-]
-
-export function ProfileCustomizationPanel() {
-  const { user, updateUser, refreshUser } = useUser()
-  
-  const [activeTab, setActiveTab] = useState("icons")
-  const [selectedIcon, setSelectedIcon] = useState("default")
-  const [selectedBanner, setSelectedBanner] = useState("purple")
-  const [isSaving, setIsSaving] = useState(false)
+  const [username, setUsername] = useState(user?.username || "")
+  const [email, setEmail] = useState(user?.email || "")
+  const [avatar, setAvatar] = useState(user?.avatar || "😀")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [friendUsername, setFriendUsername] = useState("")
+  const [addFriendError, setAddFriendError] = useState("")
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
-    const savedBanner = localStorage.getItem("user_banner_preference")
-    if (savedBanner) setSelectedBanner(savedBanner)
-    if (user?.avatar) {
-      const foundIcon = AVAILABLE_ICONS.find(i => i.id === user.avatar)
-      if (foundIcon) {
-        setSelectedIcon(user.avatar)
-      }
+    if (user) {
+      setUsername(user.username || "")
+      setEmail(user.email || "")
+      setAvatar(user.avatar || "😀")
     }
   }, [user])
 
-  const currentIconObj = AVAILABLE_ICONS.find(i => i.id === selectedIcon) || AVAILABLE_ICONS[0]
-  const currentBannerObj = AVAILABLE_BANNERS.find(b => b.id === selectedBanner) || AVAILABLE_BANNERS[0]
-  const CurrentIconComponent = currentIconObj.icon
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
-  const handleSave = async () => {
-    setIsSaving(true)
-    try {
-      localStorage.setItem("user_banner_preference", selectedBanner)
+  const handleUpdateProfile = (e: React.FormEvent) => {
+    e.preventDefault()
+    updateUser({ username, email, avatar })
+  }
 
-      await updateUser({ 
-        avatar: selectedIcon 
-      })
-      
-      await refreshUser()
-      
-    } catch (error) {
-      console.error("Erro ao salvar:", error)
-      alert("Erro ao salvar alterações. Tente novamente.")
-    } finally {
-      setIsSaving(false)
+  const handleDeleteAccount = () => {
+    deleteAccount()
+    setShowDeleteDialog(false)
+  }
+
+  const handleAddFriend = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAddFriendError("")
+
+    if (friendUsername.trim()) {
+      try {
+        await addFriend(friendUsername)
+        setFriendUsername("")
+        setAddFriendError("")
+        alert(`Friend request sent to ${friendUsername}! They will see it in their pending invites.`)
+      } catch (error: any) {
+        let errorMessage = error.response?.data?.message || error.message || "Error adding friend"
+        if (errorMessage.includes("convite pendente") || errorMessage.includes("pending")) {
+          errorMessage = `${errorMessage}\n\n💡 Tip: If you sent the invite, the other user needs to accept it.`
+        }
+        setAddFriendError(errorMessage)
+      }
     }
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await refreshUser()
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordError("")
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError("A nova senha deve ter no mínimo 6 caracteres")
+      return
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("As senhas não coincidem")
+      return
+    }
+    try {
+      setPasswordLoading(true)
+      await userService.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      })
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      setShowPasswordDialog(false)
+      alert("Senha alterada com sucesso!")
+    } catch (error: any) {
+      setPasswordError(error.response?.data?.message || error.message || "Erro ao alterar senha")
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  const sortedFriends = [...friends].sort((a, b) => b.totalPoints - a.totalPoints)
+
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      
-      <Card className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
-        <CardHeader>
-          <CardTitle>Aparência do Perfil</CardTitle>
-          <CardDescription>Como seu perfil aparece para os outros</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="relative rounded-xl overflow-hidden border border-border/50 shadow-2xl">
-            <div className={`h-32 w-full transition-colors duration-500 ${currentBannerObj.class}`} />
-            <div className="px-6 pb-6 relative">
-              <div className="flex justify-between items-end -mt-12">
-                <div className="flex items-end gap-4">
-                  <div className="h-24 w-24 rounded-full bg-background p-1.5 shadow-xl">
-                    <div className="h-full w-full rounded-full bg-muted flex items-center justify-center border-2 border-border relative overflow-hidden">
-                      <CurrentIconComponent className="h-10 w-10 text-foreground" />
-                    </div>
-                  </div>
-                  <div className="mb-1 hidden sm:block">
-                    <h3 className="text-xl font-bold">{user?.username || "Seu Nome"}</h3>
-                    <p className="text-sm text-muted-foreground">
-                       Nível {Math.floor((user?.totalPoints || 0) / 100) + 1} • Mestre das Finanças
-                    </p>
-                  </div>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">{t.profile.title}</h2>
+        <p className="text-sm text-muted-foreground">{t.profile.subtitle}</p>
+      </div>
+
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card className="border-border/40 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <User className="h-5 w-5" />
+              {t.profile.personalInfo}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">{t.profile.personalInfoDescription}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-foreground">{t.profile.username}</Label>
+                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="bg-background/50" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground">{t.profile.email}</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background/50" required />
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-primary/20 text-primary">{t.gamification.level} {user?.level}</Badge>
+                  <Badge variant="secondary" className="bg-accent/20 text-accent">{user?.totalPoints} {t.profile.points}</Badge>
                 </div>
               </div>
+              <Button type="submit" className="w-full cursor-pointer">{t.profile.updateProfile}</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/40 bg-card/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2"><Lock className="h-5 w-5" />{t.profile.accountSettings}</CardTitle>
+            <CardDescription className="text-muted-foreground">{t.profile.accountSettingsDescription}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border/40">
+              <div className="space-y-1"><Label className="text-xs text-muted-foreground">Account ID</Label><p className="text-sm font-mono text-foreground break-all">{user?.id || 'Loading...'}</p></div>
+              <div className="space-y-1"><Label className="text-xs text-muted-foreground">Username</Label><p className="text-sm font-medium text-foreground">@{user?.username || 'Loading...'}</p></div>
             </div>
+            <div className="space-y-2 pt-2">
+              <Label className="text-foreground">{t.profile.password}</Label>
+              <p className="text-sm text-muted-foreground">••••••••</p>
+              <Button variant="outline" className="w-full bg-transparent cursor-pointer" onClick={() => setShowPasswordDialog(true)}>{t.profile.changePassword}</Button>
+            </div>
+            <div className="pt-4 border-t border-border/40">
+              <Button variant="destructive" className="w-full cursor-pointer" onClick={() => setShowDeleteDialog(true)}><Trash2 className="h-4 w-4 mr-2" />{t.profile.deleteAccount}</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* AMIGOS */}
+      <Card className="border-border/40 bg-card/50 backdrop-blur">
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div><CardTitle className="text-foreground flex items-center gap-2"><UserPlus className="h-5 w-5" />{t.profile.friends}</CardTitle><CardDescription className="text-muted-foreground">{t.profile.friendsDescription}</CardDescription></div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={handleRefresh} disabled={isRefreshing} className="gap-2 cursor-pointer"><RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />Refresh</Button>
+              <Badge variant="secondary">{friends.length} {t.profile.friends}</Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleAddFriend} className="space-y-2">
+            <div className="flex gap-2">
+              <Input placeholder={t.profile.searchFriends} value={friendUsername} onChange={(e) => { setFriendUsername(e.target.value); setAddFriendError("") }} className="flex-1 bg-background/50" />
+              <Button type="submit" className="cursor-pointer"><UserPlus className="h-4 w-4 mr-2" />{t.profile.addFriend}</Button>
+            </div>
+            {addFriendError && <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/40 text-destructive text-sm">{addFriendError}</div>}
+          </form>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-foreground">{t.profile.pendingInvites}</h3><Badge variant="secondary" className="text-xs">{friendInvites.length} pending</Badge></div>
+            {friendInvites.length === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground border border-border/40 rounded-lg bg-background/30"><p>No pending friend invites</p></div>
+            ) : (
+              <div className="space-y-2">
+                {friendInvites.map((invite) => (
+                  <div key={invite.id} className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-background/30">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">👤</div>
+                      <div><p className="font-medium text-foreground">{invite.fromUser?.username}</p><p className="text-xs text-muted-foreground">Wants to be your friend</p></div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="default" onClick={() => acceptInvite(invite.id)} className="cursor-pointer"><Check className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => declineInvite(invite.id)} className="cursor-pointer"><X className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-foreground">{t.profile.friendsList}</h3>
+            {sortedFriends.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground"><p>{t.profile.noFriends}</p></div>
+            ) : (
+              <div className="space-y-2">
+                {sortedFriends.map((friend, index) => (
+                  <div key={friend.id} className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-background/30">
+                    <div className="flex items-center gap-3">
+                      <div className="font-bold">{index + 1}</div>
+                      <div className="text-2xl">👤</div>
+                      <div><p className="font-medium text-foreground">{friend.username}</p><p className="text-xs text-muted-foreground">{friend.totalPoints} points</p></div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => removeFriend(friend.id)} className="cursor-pointer"><X className="h-4 w-4" /></Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        <div className="relative grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl">
-          {["icons", "banners"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`relative z-10 flex items-center justify-center py-2.5 text-sm font-medium transition-all duration-300 cursor-pointer outline-none ring-0 focus:ring-0 ${
-                activeTab === tab ? "text-white" : "text-muted-foreground hover:text-purple-600"
-              }`}
-            >
-              <span className="relative z-20 capitalize">
-                {tab === "icons" ? "Ícones" : "Banners"}
-              </span>
-              {activeTab === tab && (
-                <motion.div
-                  layoutId="profile-customization-tab"
-                  className="absolute inset-0 bg-purple-600 rounded-lg shadow-md"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </button>
-          ))}
-        </div>
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border/40">
+          <DialogHeader><DialogTitle className="text-foreground">{t.profile.changePassword}</DialogTitle></DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div className="space-y-2"><Label>{t.profile.currentPassword}</Label><Input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })} required disabled={passwordLoading} /></div>
+            <div className="space-y-2"><Label>{t.profile.newPassword}</Label><Input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} required minLength={6} disabled={passwordLoading} /></div>
+            <div className="space-y-2"><Label>{t.profile.confirmPassword}</Label><Input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} required minLength={6} disabled={passwordLoading} /></div>
+            {passwordError && <div className="text-destructive text-sm">{passwordError}</div>}
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setShowPasswordDialog(false)}>{t.common.cancel}</Button><Button type="submit" disabled={passwordLoading}>{passwordLoading ? "Salvando..." : t.common.save}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-        <AnimatePresence mode="wait">
-          {activeTab === "icons" && (
-            <motion.div
-              key="icons"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="border-border/40 bg-card/30">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                    {AVAILABLE_ICONS.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setSelectedIcon(item.id)}
-                        className={`group relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border transition-all duration-300 cursor-pointer outline-none ring-0 focus:ring-0
-                          ${selectedIcon === item.id 
-                            ? "bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)]" 
-                            : "bg-background/50 border-border/50 hover:border-purple-500/50 hover:bg-purple-900/10"
-                          }
-                        `}
-                      >
-                        <item.icon className={`h-8 w-8 transition-transform duration-300 group-hover:scale-110 ${selectedIcon === item.id ? "text-purple-400" : "text-muted-foreground"}`} />
-                        <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">{item.label}</span>
-                        {selectedIcon === item.id && (
-                          <div className="absolute top-2 right-2 h-4 w-4 bg-purple-500 rounded-full flex items-center justify-center">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {activeTab === "banners" && (
-            <motion.div
-              key="banners"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card className="border-border/40 bg-card/30">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {AVAILABLE_BANNERS.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setSelectedBanner(item.id)}
-                        className={`group relative overflow-hidden rounded-xl border transition-all duration-300 cursor-pointer h-24 outline-none ring-0 focus:ring-0
-                          ${selectedBanner === item.id 
-                            ? "border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)] ring-2 ring-purple-500/30" 
-                            : "border-border/50 hover:border-purple-500/50"
-                          }
-                        `}
-                      >
-                        <div className={`absolute inset-0 ${item.class} opacity-80 group-hover:opacity-100 transition-opacity`} />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors">
-                          <span className="font-bold text-white drop-shadow-md">{item.label}</span>
-                        </div>
-                        {selectedBanner === item.id && (
-                          <div className="absolute top-2 right-2 h-5 w-5 bg-white text-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                            <Check className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className="flex justify-end pt-4">
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="cursor-pointer relative h-12 px-8 rounded-full 
-                     bg-purple-800 text-white border-none outline-none ring-0 focus:ring-0
-                     shadow-[0_0_15px_rgba(168,85,247,0.5)] 
-                     hover:bg-purple-700 hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] 
-                     transition-all duration-300 group overflow-hidden"
-        >
-          <div className="relative z-10 flex items-center gap-2">
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Salvando...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
-                <span className="font-bold">Salvar Alterações</span>
-              </>
-            )}
-          </div>
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        </Button>
-      </div>
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-card border-border/40">
+          <DialogHeader><DialogTitle className="text-foreground">{t.profile.deleteAccountConfirm}</DialogTitle><DialogDescription className="text-muted-foreground">{t.profile.deleteAccountWarning}</DialogDescription></DialogHeader>
+          <DialogFooter><Button variant="outline" onClick={() => setShowDeleteDialog(false)}>{t.common.cancel}</Button><Button variant="destructive" onClick={handleDeleteAccount}>{t.common.confirm}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
