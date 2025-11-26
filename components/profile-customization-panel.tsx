@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { User, Zap, Crown, Star, Flame, Smile, Ghost, Heart, Shield, Check, Save } from "lucide-react"
+import { User, Zap, Crown, Star, Flame, Smile, Ghost, Heart, Shield, Check, Save, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useUser } from "@/lib/context/user-context" 
 
 const AVAILABLE_ICONS = [
   { id: "default", icon: User, label: "Padrão" },
@@ -28,10 +29,23 @@ const AVAILABLE_BANNERS = [
 ]
 
 export function ProfileCustomizationPanel() {
+  const { user, updateUser, refreshUser } = useUser()
+  
   const [activeTab, setActiveTab] = useState("icons")
   const [selectedIcon, setSelectedIcon] = useState("default")
   const [selectedBanner, setSelectedBanner] = useState("purple")
   const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    const savedBanner = localStorage.getItem("user_banner_preference")
+    if (savedBanner) setSelectedBanner(savedBanner)
+    if (user?.avatar) {
+      const foundIcon = AVAILABLE_ICONS.find(i => i.id === user.avatar)
+      if (foundIcon) {
+        setSelectedIcon(user.avatar)
+      }
+    }
+  }, [user])
 
   const currentIconObj = AVAILABLE_ICONS.find(i => i.id === selectedIcon) || AVAILABLE_ICONS[0]
   const currentBannerObj = AVAILABLE_BANNERS.find(b => b.id === selectedBanner) || AVAILABLE_BANNERS[0]
@@ -39,13 +53,26 @@ export function ProfileCustomizationPanel() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setIsSaving(false)
-    console.log("Salvo:", { icon: selectedIcon, banner: selectedBanner })
+    try {
+      localStorage.setItem("user_banner_preference", selectedBanner)
+
+      await updateUser({ 
+        avatar: selectedIcon 
+      })
+      
+      await refreshUser()
+      
+    } catch (error) {
+      console.error("Erro ao salvar:", error)
+      alert("Erro ao salvar alterações. Tente novamente.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
+      
       <Card className="border-border/40 bg-card/50 backdrop-blur overflow-hidden">
         <CardHeader>
           <CardTitle>Aparência do Perfil</CardTitle>
@@ -53,9 +80,7 @@ export function ProfileCustomizationPanel() {
         </CardHeader>
         <CardContent>
           <div className="relative rounded-xl overflow-hidden border border-border/50 shadow-2xl">
-            {/* Banner */}
             <div className={`h-32 w-full transition-colors duration-500 ${currentBannerObj.class}`} />
-            
             <div className="px-6 pb-6 relative">
               <div className="flex justify-between items-end -mt-12">
                 <div className="flex items-end gap-4">
@@ -65,8 +90,10 @@ export function ProfileCustomizationPanel() {
                     </div>
                   </div>
                   <div className="mb-1 hidden sm:block">
-                    <h3 className="text-xl font-bold">Seu Nome</h3>
-                    <p className="text-sm text-muted-foreground">Nível 15 • Mestre das Finanças</p>
+                    <h3 className="text-xl font-bold">{user?.username || "Seu Nome"}</h3>
+                    <p className="text-sm text-muted-foreground">
+                       Nível {Math.floor((user?.totalPoints || 0) / 100) + 1} • Mestre das Finanças
+                    </p>
                   </div>
                 </div>
               </div>
@@ -99,6 +126,7 @@ export function ProfileCustomizationPanel() {
             </button>
           ))}
         </div>
+
         <AnimatePresence mode="wait">
           {activeTab === "icons" && (
             <motion.div
@@ -124,7 +152,6 @@ export function ProfileCustomizationPanel() {
                       >
                         <item.icon className={`h-8 w-8 transition-transform duration-300 group-hover:scale-110 ${selectedIcon === item.id ? "text-purple-400" : "text-muted-foreground"}`} />
                         <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground">{item.label}</span>
-                        
                         {selectedIcon === item.id && (
                           <div className="absolute top-2 right-2 h-4 w-4 bg-purple-500 rounded-full flex items-center justify-center">
                             <Check className="h-3 w-3 text-white" />
@@ -137,6 +164,7 @@ export function ProfileCustomizationPanel() {
               </Card>
             </motion.div>
           )}
+
           {activeTab === "banners" && (
             <motion.div
               key="banners"
@@ -163,7 +191,6 @@ export function ProfileCustomizationPanel() {
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-transparent transition-colors">
                           <span className="font-bold text-white drop-shadow-md">{item.label}</span>
                         </div>
-                        
                         {selectedBanner === item.id && (
                           <div className="absolute top-2 right-2 h-5 w-5 bg-white text-purple-600 rounded-full flex items-center justify-center shadow-lg">
                             <Check className="h-3.5 w-3.5" />
@@ -178,6 +205,7 @@ export function ProfileCustomizationPanel() {
           )}
         </AnimatePresence>
       </div>
+
       <div className="flex justify-end pt-4">
         <Button
           onClick={handleSave}
@@ -190,7 +218,10 @@ export function ProfileCustomizationPanel() {
         >
           <div className="relative z-10 flex items-center gap-2">
             {isSaving ? (
-              <span className="animate-pulse">Salvando...</span>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Salvando...</span>
+              </>
             ) : (
               <>
                 <Save className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />

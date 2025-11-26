@@ -115,70 +115,100 @@ export function DashboardView() {
               <div className="relative h-full">
                 <nav className="space-y-2 p-4 w-64 h-full">
                   <Button
-                    variant={currentView === "dashboard" ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "dashboard" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20"
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground" 
+                    }`}
                     onClick={() => handleViewChange("dashboard")}
                   >
-                    <TrendingUp className="h-5 w-5" />
+                    <TrendingUp className={`h-5 w-5 ${currentView === "dashboard" ? "text-white" : ""}`} />
                     {t.navigation.dashboard}
                   </Button>
-                <Button
-                  variant={currentView === "transactions" ? "default" : "ghost"}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleViewChange("transactions")}
-                >
-                  <Wallet className="h-5 w-5" />
-                  {t.navigation.transactions}
-                </Button>
-                <Button
-                  variant={currentView === "goals" ? "default" : "ghost"}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleViewChange("goals")}
-                >
-                  <Target className="h-5 w-5" />
-                  {t.navigation.goals}
-                </Button>
-                <Button
-                  variant={currentView === "achievements" ? "default" : "ghost"}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleViewChange("achievements")}
-                >
-                  <Trophy className="h-5 w-5" />
-                  {t.navigation.achievements}
-                </Button>
-                <Button
-                  variant={currentView === "challenges" ? "default" : "ghost"}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleViewChange("challenges")}
-                >
-                  <Users className="h-5 w-5" />
-                  {t.navigation.challenges}
-                </Button>
-                <Button
-                  variant={currentView === "profile" ? "default" : "ghost"}
-                  className="w-full justify-start gap-3"
-                  onClick={() => handleViewChange("profile")}
-                >
-                  <User className="h-5 w-5" />
-                  {t.navigation.profile}
-                </Button>
-                <div className="pt-2 border-t border-border/40">
+
                   <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setShowLogoutConfirm(true)}
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "transactions" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground"
+                    }`}
+                    onClick={() => handleViewChange("transactions")}
                   >
-                    <LogOut className="h-5 w-5" />
-                    {t.profile.logout}
+                    <Wallet className={`h-5 w-5 ${currentView === "transactions" ? "text-white" : ""}`} />
+                    {t.navigation.transactions}
                   </Button>
-                </div>
-              </nav>
+
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "goals" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground"
+                    }`}
+                    onClick={() => handleViewChange("goals")}
+                  >
+                    <Target className={`h-5 w-5 ${currentView === "goals" ? "text-white" : ""}`} />
+                    {t.navigation.goals}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "achievements" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground"
+                    }`}
+                    onClick={() => handleViewChange("achievements")}
+                  >
+                    <Trophy className={`h-5 w-5 ${currentView === "achievements" ? "text-white" : ""}`} />
+                    {t.navigation.achievements}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "challenges" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground"
+                    }`}
+                    onClick={() => handleViewChange("challenges")}
+                  >
+                    <Users className={`h-5 w-5 ${currentView === "challenges" ? "text-white" : ""}`} />
+                    {t.navigation.challenges}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 cursor-pointer transition-all duration-200 ${
+                      currentView === "profile" 
+                        ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                        : "hover:bg-[#9F55FF]/10 text-muted-foreground"
+                    }`}
+                    onClick={() => handleViewChange("profile")}
+                  >
+                    <User className={`h-5 w-5 ${currentView === "profile" ? "text-white" : ""}`} />
+                    {t.navigation.profile}
+                  </Button>
+
+                  <div className="pt-2 border-t border-border/40">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                      onClick={() => setShowLogoutConfirm(true)}
+                    >
+                      <LogOut className="h-5 w-5" />
+                      {t.profile.logout}
+                    </Button>
+                  </div>
+                </nav>
               </div>
             </motion.aside>
           )}
         </AnimatePresence>
 
-        <main className={`flex-1 overflow-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
+        <main className={`flex-1 pt-16 overflow-auto transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
           <div className="w-full max-w-7xl mx-auto p-4 sm:p-6">
             {currentView === "dashboard" && <SpendingDashboard refreshTrigger={refreshTrigger} />}
             {currentView === "transactions" && <TransactionsList onTransactionChange={handleTransactionChange} />}
@@ -236,77 +266,82 @@ export function DashboardView() {
         onSuccess={() => setRefreshTrigger(prev => prev + 1)}
       />
 
-      <nav className="sticky bottom-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/40 bg-background/95 backdrop-blur md:hidden">
         <div className="flex items-center justify-around p-2 gap-1">
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-200 ${
               currentView === "dashboard" 
-                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
-                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+                ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                : "text-muted-foreground hover:text-[#9F55FF] hover:bg-[#9F55FF]/10"
             }`}
             onClick={() => handleViewChange("dashboard")}
           >
-            <TrendingUp className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "dashboard" ? "text-yellow-300" : ""}`} />
+            <TrendingUp className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "dashboard" ? "text-white" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.dashboard}</span>
           </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-200 ${
               currentView === "transactions" 
-                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
-                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+                ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                : "text-muted-foreground hover:text-[#9F55FF] hover:bg-[#9F55FF]/10"
             }`}
             onClick={() => handleViewChange("transactions")}
           >
-            <Wallet className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "transactions" ? "text-yellow-300" : ""}`} />
+            <Wallet className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "transactions" ? "text-white" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.transactions}</span>
           </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-200 ${
               currentView === "goals" 
-                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
-                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+                ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                : "text-muted-foreground hover:text-[#9F55FF] hover:bg-[#9F55FF]/10"
             }`}
             onClick={() => handleViewChange("goals")}
           >
-            <Target className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "goals" ? "text-yellow-300" : ""}`} />
+            <Target className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "goals" ? "text-white" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.goals}</span>
           </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-200 ${
               currentView === "achievements" 
-                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
-                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+                ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                : "text-muted-foreground hover:text-[#9F55FF] hover:bg-[#9F55FF]/10"
             }`}
             onClick={() => handleViewChange("achievements")}
           >
-            <Trophy className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "achievements" ? "text-yellow-300" : ""}`} />
+            <Trophy className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "achievements" ? "text-white" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.achievements}</span>
           </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-300 ${
+            className={`flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer transition-all duration-200 ${
               currentView === "profile" 
-                ? "bg-purple-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.6)] hover:bg-purple-900" 
-                : "text-muted-foreground hover:text-purple-600 hover:bg-transparent"
+                ? "bg-[#9F55FF] text-white hover:bg-[#8B45E6] shadow-md shadow-[#9F55FF]/20" 
+                : "text-muted-foreground hover:text-[#9F55FF] hover:bg-[#9F55FF]/10"
             }`}
             onClick={() => handleViewChange("profile")}
           >
-            <User className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "profile" ? "text-yellow-300" : ""}`} />
+            <User className={`h-4 w-4 sm:h-5 sm:w-5 ${currentView === "profile" ? "text-white" : ""}`} />
             <span className="text-[9px] sm:text-xs truncate max-w-full">{t.navigation.profile}</span>
           </Button>
+
           <Button
             variant="ghost"
             size="sm"
-            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1 text-destructive hover:text-destructive"
+            className="flex-col gap-0.5 h-auto py-2 px-1 flex-1 cursor-pointer text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
             onClick={() => setShowLogoutConfirm(true)}
           >
             <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
