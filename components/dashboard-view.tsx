@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Wallet, TrendingUp, Target, Trophy, Plus, Menu, User, LogOut, Users, ChevronLeft, ChevronRight } from "lucide-react"
+import { Wallet, TrendingUp, Target, Trophy, Plus, User, LogOut, Users, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
